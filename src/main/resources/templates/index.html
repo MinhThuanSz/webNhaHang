@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rivière Restaurant | Trải nghiệm ẩm thực đẳng cấp</title>
+    <link
+      rel="stylesheet"
+      href="../static/css/style.css"
+      th:href="@{/css/style.css}"
+    />
+  </head>
+  <body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+
+  <header class="hero-luxury">
+  <div class="hero-overlay"></div>
+
+  <div class="container hero-luxury-grid">
+    <div class="hero-luxury-content">
+      <span class="hero-kicker">Fine Dining • European Cuisine • Private Dining</span>
+      <h1>Trải nghiệm ẩm thực đẳng cấp trong không gian sang trọng và đầy cảm hứng</h1>
+      <p class="hero-description">
+        Rivière Restaurant mang đến hành trình thưởng thức tinh tế với thực đơn
+        châu Âu hiện đại, phong cách phục vụ chỉn chu và không gian được thiết kế
+        dành cho những khoảnh khắc đáng nhớ.
+      </p>
+
+      <div class="hero-luxury-actions">
+        <a class="btn btn-primary btn-large" th:href="@{/booking/start}">
+          Đặt bàn ngay
+        </a>
+        <a class="btn btn-light btn-large" href="#about">
+          Khám phá nhà hàng
+        </a>
+      </div>
+
+      <div class="hero-luxury-highlights">
+        <div class="hero-highlight">
+          <strong>Không gian đẳng cấp</strong>
+          <span>Thiết kế tinh tế cho hẹn hò, tiếp khách và tiệc riêng</span>
+        </div>
+        <div class="hero-highlight">
+          <strong>Ẩm thực chọn lọc</strong>
+          <span>Mỗi món ăn là sự kết hợp giữa hương vị và nghệ thuật</span>
+        </div>
+        <div class="hero-highlight">
+          <strong>Dịch vụ tận tâm</strong>
+          <span>Nâng niu từng trải nghiệm bằng sự chỉn chu và chuyên nghiệp</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-booking-card">
+      <div class="booking-card-inner">
+        <span class="panel-label">Rivière Signature</span>
+        <h3>Một buổi tối trọn vẹn bắt đầu từ không gian hoàn hảo</h3>
+        <p>
+          Từ bàn riêng tư cho những buổi hẹn hò đến khu vực sang trọng cho gặp gỡ
+          đối tác, mỗi vị trí đều được chuẩn bị để mang đến trải nghiệm đáng nhớ.
+        </p>
+
+        <div class="booking-meta-list">
+          <div class="booking-meta-item">
+            <strong>Giờ hoạt động</strong>
+            <span>10:00 - 22:30 hằng ngày</span>
+          </div>
+          <div class="booking-meta-item">
+            <strong>Địa điểm</strong>
+            <span>Cần Giuộc, Long An</span>
+          </div>
+          <div class="booking-meta-item">
+            <strong>Phong cách</strong>
+            <span>Fine Dining • Luxury Experience</span>
+          </div>
+        </div>
+
+        <a class="btn btn-primary full-width" th:href="@{/booking/start}">
+          Giữ chỗ của bạn
+        </a>
+      </div>
+    </div>
+  </div>
+</header>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-heading">
+          <span class="section-tag">Không gian bàn ăn</span>
+          <h2>Những không gian được thiết kế cho từng trải nghiệm thưởng thức</h2>
+        </div>
+        <div class="card-grid three">
+          <article class="info-card" th:each="table : ${featuredTables}">
+            <div class="card-badge" th:text="${table.location}">Vị trí</div>
+            <h3 th:text="${table.name}">Bàn Lotus 01</h3>
+            <p class="muted" th:text="${table.summaryLine}">
+              Bàn tròn - Ghế tựa - Sức chứa 5 người
+            </p>
+            <p th:text="${table.description}">Mô tả bàn</p>
+            <div class="card-footer">
+              <span class="pill" th:text="${table.capacity + ' khách'}">
+                5 khách
+              </span>
+              <a class="text-link" th:href="@{/booking/start}">
+                Đặt không gian này
+              </a>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark">
+      <div class="container">
+        <div class="section-heading">
+          <span class="section-tag">Menu Preview</span>
+          <h2>Những hương vị được tuyển chọn cho trải nghiệm ẩm thực tinh tế</h2>
+        </div>
+
+        <div class="menu-preview-grid">
+          <article class="dish-card" th:each="item : ${featuredMenus}">
+            <img
+              src="../static/images/steak.svg"
+              alt="Món ăn"
+              th:src="${item.imageUrl}"
+              th:alt="${item.name}"
+            />
+            <div class="dish-content">
+              <span class="pill" th:text="${item.category.displayName}">
+                Danh mục
+              </span>
+              <h3 th:text="${item.name}">Tên món</h3>
+              <p th:text="${item.description}">Mô tả</p>
+              <div class="dish-footer">
+                <strong th:text="${item.priceDisplay}">250.000 ₫</strong>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="about">
+      <div class="container two-col about-grid">
+        <div class="content-block">
+          <span class="section-tag">About Rivière</span>
+          <h2>
+            Không chỉ phục vụ món ăn, chúng tôi kiến tạo một hành trình ẩm thực
+            tinh tế và đầy cảm hứng.
+          </h2>
+          <p class="lead-text">
+            Rivière Restaurant là nơi giao thoa giữa ẩm thực châu Âu hiện đại,
+            không gian sang trọng và phong cách phục vụ chỉn chu. Mỗi trải nghiệm
+            tại đây được chăm chút tỉ mỉ, từ hương vị món ăn, nghệ thuật trình bày
+            đến bầu không khí ấm cúng và đẳng cấp.
+          </p>
+          <div class="about-highlights">
+            <div class="metric-card about-metric">
+              <strong>Không gian sang trọng</strong>
+              <span>
+                Thiết kế tinh tế, ấm cúng, phù hợp cho những buổi hẹn hò, tiếp
+                đón đối tác và các dịp sum họp đáng nhớ.
+              </span>
+            </div>
+            <div class="metric-card about-metric">
+              <strong>Ẩm thực chọn lọc</strong>
+              <span>
+                Thực đơn được chế biến từ nguyên liệu chất lượng, kết hợp hài hòa
+                giữa hương vị đặc sắc và nghệ thuật trình bày.
+              </span>
+            </div>
+            <div class="metric-card about-metric">
+              <strong>Dịch vụ đẳng cấp</strong>
+              <span>
+                Đội ngũ phục vụ chuyên nghiệp, tận tâm, mang đến sự trọn vẹn trong
+                từng khoảnh khắc trải nghiệm.
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="about-showcase">
+          <div class="content-panel luxury-panel">
+            <span class="panel-label">Signature Experience</span>
+            <h3>Ẩm thực tinh tế, không gian đẳng cấp, trải nghiệm khó quên.</h3>
+            <p>
+              Từ những buổi tối lãng mạn đến các dịp gặp gỡ quan trọng, Rivière
+              luôn mang đến một không gian riêng đầy cảm hứng, nơi mỗi món ăn
+              không chỉ được thưởng thức bằng vị giác mà còn được cảm nhận bằng
+              cảm xúc.
+            </p>
+            <div class="inline-tags">
+              <span class="pill">Fine Dining</span>
+              <span class="pill">Private Dining</span>
+              <span class="pill">Luxury Experience</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section dark" id="contact">
+      <div class="container">
+        <div class="section-heading left">
+          <span class="section-tag">Liên hệ & đặt chỗ</span>
+          <h2>Kết nối cùng Rivière cho những trải nghiệm ẩm thực trọn vẹn</h2>
+          <p class="section-subtitle light-text">
+            Chúng tôi luôn sẵn sàng đồng hành cùng bạn trong những buổi hẹn hò,
+            tiệc riêng, sinh nhật, gặp gỡ đối tác và các dịp gặp mặt đáng nhớ.
+          </p>
+        </div>
+        <div class="contact-layout">
+          <div class="contact-grid">
+            <article class="contact-card">
+              <h3>Thông tin liên hệ</h3>
+              <div class="contact-item">
+                <strong>Địa chỉ</strong>
+                <span>Công viên Nguyễn Thị Bảy, Cần Giuộc, Long An</span>
+              </div>
+              <div class="contact-item">
+                <strong>Hotline</strong>
+                <span>0988 000 001</span>
+              </div>
+              <div class="contact-item">
+                <strong>Email</strong>
+                <span>booking@luxuryrestaurant.com</span>
+              </div>
+              <div class="contact-item social-item">
+                <strong>Facebook</strong>
+                <a
+                  class="social-link"
+                  href="https://www.facebook.com/minh.thuan.273917?locale=vi_VN"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Facebook Rivière Restaurant"
+                >
+                  <span class="social-icon" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        d="M13.5 21v-7h2.3l.4-3h-2.7V9.1c0-.9.3-1.5 1.6-1.5H16V5.1c-.2 0-1-.1-1.9-.1-1.9 0-3.2 1.2-3.2 3.4V11H8v3h2.9v7h2.6Z"
+                      />
+                    </svg>
+                  </span>
+                  <span>Mở Facebook</span>
+                </a>
+              </div>
+            </article>
+            <article class="contact-card">
+              <h3>Giờ hoạt động</h3>
+              <div class="contact-item">
+                <strong>Thứ 2 - Thứ 6</strong>
+                <span>10:00 - 22:30</span>
+              </div>
+              <div class="contact-item">
+                <strong>Thứ 7 - Chủ nhật</strong>
+                <span>09:00 - 23:00</span>
+              </div>
+              <div class="contact-item">
+                <strong>Private Dining</strong>
+                <span>Nhận phục vụ theo lịch đặt riêng</span>
+              </div>
+            </article>
+            <article class="contact-card highlight-card">
+              <h3>Đặt bàn ngay</h3>
+              <p>
+                Lựa chọn không gian yêu thích và chuẩn bị cho một trải nghiệm ẩm
+                thực tinh tế tại Rivière Restaurant.
+              </p>
+              <div class="contact-actions">
+                <a
+                  class="btn btn-primary full-width"
+                  th:href="@{/booking/start}"
+                >
+                  Bắt đầu đặt bàn
+                </a>
+                <a class="btn btn-ghost full-width" th:href="@{/login}">
+                  Đăng nhập để quản lý booking
+                </a>
+              </div>
+            </article>
+          </div>
+          <article class="map-card">
+            <div class="map-card-header">
+              <div>
+                <span class="panel-label">Google Maps</span>
+                <h3>Vị trí nhà hàng tại Công viên Nguyễn Thị Bảy</h3>
+              </div>
+              <a
+                class="text-link light-link"
+                href="https://www.google.com/maps?q=C%C3%B4ng+vi%C3%AAn+Nguy%E1%BB%85n+Th%E1%BB%8B+B%E1%BA%A3y,+C%E1%BA%A7n+Giu%E1%BB%99c,+Long+An"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Mở trên Google Maps
+              </a>
+            </div>
+            <div class="map-embed-shell">
+              <iframe
+                title="Bản đồ Rivière Restaurant"
+                src="https://www.google.com/maps?q=C%C3%B4ng%20vi%C3%AAn%20Nguy%E1%BB%85n%20Th%E1%BB%8B%20B%E1%BA%A3y%2C%20C%E1%BA%A7n%20Giu%E1%BB%99c%2C%20Long%20An&z=16&output=embed"
+                loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                allowfullscreen
+              >
+              </iframe>
+              <div class="map-overlay-card">
+                <strong>Rivière Restaurant</strong>
+                <span>Công viên Nguyễn Thị Bảy, Cần Giuộc, Long An</span>
+                <small>
+                  Không gian lý tưởng cho những buổi gặp gỡ, liên hoan và trải
+                  nghiệm ẩm thực theo nhóm tại khu vực Cần Giuộc.
+                </small>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <div th:replace="~{fragments/footer :: footer}"></div>
+    <script src="../static/js/app.js" th:src="@{/js/app.js}"></script>
+  </body>
+</html>

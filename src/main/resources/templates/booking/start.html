@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Đặt bàn | Rivière Restaurant</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+    <div class="container">
+        <span class="section-tag">Bước 1</span>
+        <h1>Cho chúng tôi biết số lượng khách và thời gian bạn muốn đến.</h1>
+        <p>Hệ thống sẽ tự động hiển thị những bàn phù hợp nhất.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container booking-layout">
+        <div class="content-panel">
+            <h3>Thông tin đặt bàn</h3>
+            <form class="stack-form" th:action="@{/booking/tables}" method="post">
+                <div class="booking-form-grid">
+    <label>Số lượng người
+        <input type="number" name="guestCount" min="1" max="30" value="4" required/>
+    </label>
+
+    <label>Ngày giờ đến
+        <input type="datetime-local" name="bookingDateTime" required/>
+    </label>
+</div>
+
+<button class="btn btn-primary" type="submit">Tìm bàn phù hợp</button>
+            </form>
+        </div>
+
+        <div class="info-card large">
+            <div class="card-badge">Booking flow</div>
+            <h3>Luồng chuẩn cho khách hàng</h3>
+            <div class="timeline-list compact">
+                <div class="timeline-item">
+                    <h4>1. Tìm bàn</h4>
+                    <p>Nhập số lượng khách và thời gian để lọc bàn theo sức chứa.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>2. Chọn bàn</h4>
+                    <p>Xem rõ kiểu bàn, loại ghế, vị trí và mô tả chi tiết.</p>
+                </div>
+                <div class="timeline-item">
+                    <h4>3. Chọn món trước</h4>
+                    <p>Khách có thể đặt món trước để tiết kiệm thời gian phục vụ.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

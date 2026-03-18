@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Quản lý bàn | Rivière Restaurant</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header admin">
+    <div class="container">
+        <span class="section-tag">Table manager</span>
+        <h1>Quản lý bàn ăn</h1>
+        <p>Thêm mới, chỉnh sửa mô tả bàn, kiểu bàn, ghế và sức chứa.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container admin-layout">
+        <div class="table-card">
+            <h3 th:text="${tableForm.id != null ? 'Chỉnh sửa bàn ăn' : 'Thêm bàn mới'}">Thêm bàn mới</h3>
+            <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
+
+            <form class="stack-form" th:action="@{/admin/tables/save}" th:object="${tableForm}" method="post">
+                <input type="hidden" th:field="*{id}"/>
+                <label>Tên bàn
+                    <input type="text" th:field="*{name}" placeholder="Bàn Lotus 01" required/>
+                </label>
+                <label>Kiểu bàn
+                    <input type="text" th:field="*{tableType}" placeholder="Bàn tròn" required/>
+                </label>
+                <label>Loại ghế
+                    <input type="text" th:field="*{chairType}" placeholder="Ghế tựa" required/>
+                </label>
+                <label>Sức chứa
+                    <input type="number" th:field="*{capacity}" min="1" max="50" required/>
+                </label>
+                <label>Vị trí
+                    <input type="text" th:field="*{location}" placeholder="Tầng 1 / Phòng VIP / Sân vườn" required/>
+                </label>
+                <label>Mô tả
+                    <textarea rows="4" th:field="*{description}" placeholder="Mô tả trải nghiệm, vị trí, phong cách..."></textarea>
+                </label>
+
+                <label class="checkbox-row">
+                    <input type="checkbox" th:field="*{active}"/>
+                    <span>Đang hoạt động</span>
+                </label>
+
+                <div class="action-row">
+                    <button type="submit" class="btn btn-primary">Lưu bàn ăn</button>
+                    <a class="btn btn-ghost" th:href="@{/admin/tables}">Làm mới form</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="table-card">
+            <div class="table-card-head">
+                <div>
+                    <span class="section-tag">Danh sách bàn</span>
+                    <h3>Tất cả bàn trong hệ thống</h3>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Tên bàn</th>
+                        <th>Mô tả ngắn</th>
+                        <th>Vị trí</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="table : ${tables}">
+                        <td th:text="${table.name}">Bàn Lotus 01</td>
+                        <td th:text="${table.summaryLine}">Bàn tròn</td>
+                        <td th:text="${table.location}">Tầng 1</td>
+                        <td th:text="${table.active ? 'Đang dùng' : 'Ngưng'}">Đang dùng</td>
+                        <td>
+                            <div class="inline-actions">
+                                <a class="btn btn-small btn-ghost" th:href="@{/admin/tables(editId=${table.id})}">Sửa</a>
+                                <form th:action="@{/admin/tables/delete}" method="post">
+                                    <input type="hidden" name="id" th:value="${table.id}"/>
+                                    <button class="btn btn-small btn-danger" type="submit">Xóa</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

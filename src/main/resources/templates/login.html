@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Đăng nhập | Rivière Restaurant</title>
+    <link rel="stylesheet" href="../static/css/style.css" th:href="@{/css/style.css}"/>
+</head>
+<body class="auth-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="auth-shell">
+    <div class="auth-card wide">
+        <div class="auth-copy">
+    <span class="section-tag">Rivière Experience</span>
+    <h1>Trở lại với hành trình ẩm thực tinh tế tại Rivière.</h1>
+    <p>
+        Đăng nhập để tiếp tục khám phá không gian sang trọng, thực đơn chọn lọc
+        và những trải nghiệm đáng nhớ tại nhà hàng.
+    </p>
+</div>
+
+        <div class="auth-form-wrap">
+            <form class="auth-form" th:action="@{/login}" method="post">
+                <h2>Đăng nhập</h2>
+
+                <div class="alert success" th:if="${successMessage}" th:text="${successMessage}">Thông báo thành công</div>
+                <div class="alert error" th:if="${param.error}">Sai số điện thoại hoặc mật khẩu.</div>
+                <div class="alert info" th:if="${param.logout}">Bạn đã đăng xuất khỏi hệ thống.</div>
+
+                <label>Số điện thoại
+                    <input type="text" name="username" placeholder="Số điện thoại" required/>
+                </label>
+
+                <label>Mật khẩu
+                    <input type="password" name="password" placeholder="Nhập mật khẩu" required/>
+                </label>
+
+                <button type="submit" class="btn btn-primary full-width">Đăng nhập</button>
+                <p class="helper-text">Chưa có tài khoản? <a th:href="@{/register}">Đăng ký ngay</a></p>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

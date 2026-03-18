@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Đăng ký | Rivière Restaurant</title>
+    <link rel="stylesheet" href="../static/css/style.css" th:href="@{/css/style.css}"/>
+</head>
+<body class="auth-page">
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="auth-shell">
+    <div class="auth-card">
+       <div class="auth-copy">
+    <span class="section-tag">Tạo tài khoản</span>
+    <h1>Bắt đầu hành trình ẩm thực tinh tế cùng Rivière.</h1>
+    <p>
+        Đăng ký tài khoản để khám phá không gian sang trọng, thực đơn chọn lọc
+        và những trải nghiệm fine dining được chăm chút trong từng chi tiết.
+    </p>
+</div>
+
+        <div class="auth-form-wrap">
+            <form class="auth-form" th:action="@{/register}" th:object="${registerRequest}" method="post">
+                <h2>Đăng ký tài khoản</h2>
+                <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}">Lỗi</div>
+
+                <label>Họ và tên
+                    <input type="text" th:field="*{fullName}" placeholder="Họ và tên"/>
+                    <small class="field-error" th:if="${#fields.hasErrors('fullName')}" th:errors="*{fullName}"></small>
+                </label>
+
+                <label>Số điện thoại
+                    <input type="text" th:field="*{phone}" placeholder="Số điện thoại"/>
+                    <small class="field-error" th:if="${#fields.hasErrors('phone')}" th:errors="*{phone}"></small>
+                </label>
+
+                <label>Mật khẩu
+                    <input type="password" th:field="*{password}" placeholder="Tối thiểu 6 ký tự"/>
+                    <small class="field-error" th:if="${#fields.hasErrors('password')}" th:errors="*{password}"></small>
+                </label>
+
+                <label>Xác nhận mật khẩu
+                    <input type="password" th:field="*{confirmPassword}" placeholder="Nhập lại mật khẩu"/>
+                    <small class="field-error" th:if="${#fields.hasErrors('confirmPassword')}" th:errors="*{confirmPassword}"></small>
+                </label>
+
+                <button type="submit" class="btn btn-primary full-width">Tạo tài khoản</button>
+                <p class="helper-text">Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a></p>
+            </form>
+        </div>
+    </div>
+</section>
+</body>
+</html>

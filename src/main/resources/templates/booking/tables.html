@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Chọn bàn | Rivière Restaurant</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+    <div class="container">
+        <span class="section-tag">Bước 2</span>
+        <h1>Danh sách bàn phù hợp cho <span th:text="${guestCount}">4</span> khách.</h1>
+        <p>Thời gian dự kiến: <strong th:text="${#temporals.format(bookingDateTime, 'dd/MM/yyyy HH:mm')}">20/03/2026 19:00</strong></p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div th:if="${#lists.isEmpty(tables)}" class="empty-state">
+            <h3>Hiện chưa có bàn phù hợp.</h3>
+            <p>Hãy thử giảm số lượng khách hoặc chọn khung giờ khác.</p>
+            <a class="btn btn-primary" th:href="@{/booking/start}">Quay lại</a>
+        </div>
+
+        <div class="card-grid three" th:if="${!#lists.isEmpty(tables)}">
+            <article class="info-card" th:each="table : ${tables}">
+                <div class="card-badge" th:text="${table.location}">Tầng 1</div>
+                <h3 th:text="${table.name}">Bàn Lotus</h3>
+                <p class="muted" th:text="${table.summaryLine}"></p>
+                <p th:text="${table.description}"></p>
+
+                <form th:action="@{/booking/preorder}" method="post">
+                    <input type="hidden" name="tableId" th:value="${table.id}"/>
+                    <input type="hidden" name="guestCount" th:value="${guestCount}"/>
+                    <input type="hidden" name="bookingDateTime" th:value="${bookingDateTime}"/>
+                    <button class="btn btn-primary full-width" type="submit">Chọn bàn này</button>
+                </form>
+            </article>
+        </div>
+    </div>
+</section>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>

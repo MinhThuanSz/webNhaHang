@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html
+  lang="vi"
+  xmlns:th="http://www.thymeleaf.org"
+  xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+>
+  <body>
+    <nav class="nav-shell" th:fragment="navbar">
+      <div class="container nav-inner">
+        <a th:href="@{/}" class="brand">
+          <span class="brand-mark">R</span>
+          <span>
+            <strong>Rivière Restaurant</strong>
+            <small>Fine Dining & Luxury Experience</small>
+          </span>
+        </a>
+
+        <div class="nav-links">
+          <a href="/#top" th:href="@{/}">Trang chủ</a>
+          <a href="/#about">Về chúng tôi</a>
+          <a href="/#contact">Liên hệ</a>
+          <a th:href="@{/booking/start}" sec:authorize="hasAnyRole('CUSTOMER','ADMIN')">Đặt bàn</a>
+          <a th:href="@{/booking/my}" sec:authorize="hasAnyRole('CUSTOMER','ADMIN')">Đặt chỗ của tôi</a>
+          <a th:href="@{/admin/dashboard}" sec:authorize="hasAnyRole('ADMIN','TABLE_MANAGER','MENU_MANAGER')">Quản lý</a>
+        </div>
+
+        <div class="nav-actions">
+          <div class="profile-chip" th:if="${currentUser != null}">
+            <span class="profile-name" th:text="${currentUser.fullName}">Tên người dùng</span>
+            <span class="profile-role" th:text="${currentUser.roleSummary}">Role</span>
+          </div>
+
+          <a class="btn btn-ghost" th:if="${currentUser == null}" th:href="@{/login}">
+            Đăng nhập
+          </a>
+          <a class="btn btn-primary" th:if="${currentUser == null}" th:href="@{/register}">
+            Đăng ký
+          </a>
+
+          <form th:if="${currentUser != null}" th:action="@{/logout}" method="post">
+            <button class="btn btn-outline" type="submit">Đăng xuất</button>
+          </form>
+        </div>
+      </div>
+    </nav>
+  </body>
+</html>

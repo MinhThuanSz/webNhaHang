@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Chọn món trước | Rivière Restaurant</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+    <div class="container">
+        <span class="section-tag">Bước 3</span>
+        <h1>Lựa chọn món ăn trước cho trải nghiệm trọn vẹn hơn</h1>
+        <p>
+            Bạn đã chọn:
+            <strong th:text="${selectedTable.name}">Bàn Lotus</strong>
+            -
+            <span th:text="${selectedTable.summaryLine}">Bàn tròn - Ghế tựa - Sức chứa 4 người</span>
+        </p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container preorder-layout">
+        <div>
+            <form th:action="@{/booking/confirm}" method="post" class="stack-form">
+                <input type="hidden" name="tableId" th:value="${selectedTable.id}"/>
+                <input type="hidden" name="guestCount" th:value="${guestCount}"/>
+                <input type="hidden" name="bookingDateTime" th:value="${bookingDateTime}"/>
+
+                <div class="section-heading left preorder-heading">
+                    <span class="section-tag">Thực đơn chọn trước</span>
+                    <h2>Những hương vị được chuẩn bị riêng cho bàn của bạn</h2>
+                    <p class="section-subtitle">
+                        Khám phá thực đơn được tuyển chọn theo từng danh mục, từ khai vị tinh tế
+                        đến món chính đặc sắc và tráng miệng đầy cảm hứng.
+                    </p>
+                </div>
+
+                <div class="menu-category-strip">
+                    <button type="button" class="menu-category-pill active" data-category="all">
+                        Tất cả
+                    </button>
+
+                    <button
+                        type="button"
+                        class="menu-category-pill"
+                        th:each="entry : ${groupedMenu}"
+                        th:text="${entry.key.displayName}"
+                        th:attr="data-category=${entry.key.name()}">
+                        Món chính
+                    </button>
+                </div>
+
+                <div class="menu-group-list">
+                    <div th:each="entry : ${groupedMenu}"
+                         class="menu-group"
+                         th:attr="data-category=${entry.key.name()}">
+
+                        <div class="group-head">
+                            <span class="section-tag" th:text="${entry.key.displayName}">Món chính</span>
+                            <h3 th:text="${'Tinh hoa ' + #strings.toLowerCase(entry.key.displayName)}">
+                                Tinh hoa món chính
+                            </h3>
+                        </div>
+
+                        <div class="menu-preview-grid menu-preview-grid-preorder">
+                            <article class="dish-card dish-card-preorder" th:each="item : ${entry.value}">
+                                <img src="../../static/images/steak.svg"
+                                     alt="Món ăn"
+                                     th:src="${item.imageUrl}"
+                                     th:alt="${item.name}"/>
+
+                                <div class="dish-content">
+                                    <span class="pill" th:text="${entry.key.displayName}">Danh mục</span>
+                                    <h3 th:text="${item.name}">Tên món</h3>
+                                    <p th:text="${item.description}">Mô tả</p>
+
+                                    <div class="dish-footer preorder-footer">
+                                        <strong th:text="${item.priceDisplay}">250.000 đ</strong>
+
+                                        <label class="quantity-box quantity-box-preorder">
+                                            <span>Số lượng</span>
+                                            <input type="number"
+                                                   min="0"
+                                                   value="0"
+                                                   th:name="${'qty_' + item.id}"
+                                                   class="qty-input"
+                                                   th:attr="data-price=${item.price}"/>
+                                        </label>
+                                    </div>
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payment-choice-card">
+                    <div class="group-head payment-head">
+                        <h3>Lựa chọn hình thức thanh toán</h3>
+                        <p class="muted">
+                            Bạn có thể thanh toán trước phần món ăn qua VNPAY hoặc lựa chọn thanh toán trực tiếp tại nhà hàng.
+                        </p>
+                    </div>
+
+                    <label class="payment-option">
+                        <input type="radio" name="paymentMethod" value="PAY_AT_RESTAURANT" checked="checked"/>
+                        <div>
+                            <strong>Thanh toán tại nhà hàng</strong>
+                            <p>Phù hợp khi bạn muốn giữ chỗ trước và thanh toán trong lúc dùng bữa.</p>
+                        </div>
+                    </label>
+
+                    <label class="payment-option" th:classappend="${!vnpayConfigured} ? ' payment-option-disabled' : ''">
+                        <input type="radio" name="paymentMethod" value="VNPAY" th:disabled="${!vnpayConfigured}"/>
+                        <div>
+                            <strong>Thanh toán qua VNPAY</strong>
+                            <p>Thanh toán online cho phần món ăn đã chọn trước. Số tiền tối thiểu là 5.000 VND.</p>
+                        </div>
+                    </label>
+
+                    <div class="alert info" th:if="${!vnpayConfigured}">
+                        VNPAY hiện chưa sẵn sàng. Bạn vẫn có thể hoàn tất đặt bàn và thanh toán trực tiếp tại nhà hàng.
+                    </div>
+                </div>
+
+                <label class="notes-field">Ghi chú cho nhà hàng
+    <textarea
+        name="notes"
+        rows="4"
+        placeholder="Ví dụ: cần ghế em bé, hạn chế đồ cay, ưu tiên vị trí gần cửa sổ..."></textarea>
+</label>
+
+                <div class="action-row">
+                    <button class="btn btn-primary" type="submit">Xác nhận đặt bàn và chọn món</button>
+                </div>
+            </form>
+        </div>
+
+        <aside class="summary-card">
+            <h3>Tóm tắt đặt chỗ</h3>
+
+            <div class="summary-row">
+                <span>Bàn đã chọn</span>
+                <strong th:text="${selectedTable.name}">Bàn Lotus</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Số lượng khách</span>
+                <strong th:text="${guestCount + ' người'}">4 người</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Thời gian dùng bữa</span>
+                <strong th:text="${#temporals.format(bookingDateTime, 'dd/MM/yyyy HH:mm')}">20/03/2026 19:00</strong>
+            </div>
+
+            <div class="summary-row">
+                <span>Món đã chọn</span>
+                <strong id="selectedCount">0 món</strong>
+            </div>
+
+            <div class="summary-total">
+                <span>Tạm tính</span>
+                <strong id="grandTotal">0 đ</strong>
+            </div>
+
+            <p class="summary-help">
+                Nếu bạn chọn VNPAY, hệ thống sẽ xác nhận booking trước và chuyển bạn đến cổng thanh toán.
+            </p>
+
+            <form th:action="@{/booking/confirm-without-menu}" method="post" class="stack-form">
+                <input type="hidden" name="tableId" th:value="${selectedTable.id}"/>
+                <input type="hidden" name="guestCount" th:value="${guestCount}"/>
+                <input type="hidden" name="bookingDateTime" th:value="${bookingDateTime}"/>
+                <button class="btn btn-ghost full-width" type="submit">Chỉ giữ bàn, chưa chọn món</button>
+            </form>
+        </aside>
+    </div>
+</section>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+<script src="../../static/js/app.js" th:src="@{/js/app.js}"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const pills = document.querySelectorAll(".menu-category-pill");
+    const groups = document.querySelectorAll(".menu-group");
+
+    pills.forEach((pill) => {
+        pill.addEventListener("click", function () {
+            const category = this.dataset.category;
+
+            pills.forEach((item) => item.classList.remove("active"));
+            this.classList.add("active");
+
+            groups.forEach((group) => {
+                const groupCategory = group.dataset.category;
+
+                if (category === "all" || groupCategory === category) {
+                    group.classList.remove("hidden");
+                } else {
+                    group.classList.add("hidden");
+                }
+            });
+        });
+    });
+});
+</script>
+</body>
+</html>

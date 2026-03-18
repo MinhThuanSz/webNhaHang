@@ -1,0 +1,31 @@
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3307/restaurant_pro_db?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=Asia/Ho_Chi_Minh&allowPublicKeyRetrieval=true
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: true
+    properties:
+      hibernate:
+        format_sql: true
+  thymeleaf:
+    cache: false
+
+server:
+  port: 8089
+
+
+payment:
+  vnpay:
+    enabled: false
+    tmn-code: YOUR_TMN_CODE
+    hash-secret: YOUR_HASH_SECRET
+    pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    refund-api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
+    return-url: http://localhost:8089/payment/vnpay/return
+    order-type: other
+    locale: vn
+    expire-minutes: 15

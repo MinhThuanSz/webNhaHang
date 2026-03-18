@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Booking của tôi | Riviere Restaurant</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header">
+    <div class="container">
+        <span class="section-tag">Khách hàng</span>
+        <h1>Lịch sử đặt bàn của bạn</h1>
+        <p>Theo dõi trạng thái booking, số lượng khách, món đã đặt trước và tiến trình thanh toán VNPAY.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
+        <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
+        <div class="alert info" th:if="${infoMessage}" th:text="${infoMessage}"></div>
+
+        <div th:if="${#lists.isEmpty(bookings)}" class="empty-state">
+            <h3>Bạn chưa có booking nào.</h3>
+            <p>Hãy bắt đầu với một bàn thật đẹp cho bữa tối tiếp theo.</p>
+            <a class="btn btn-primary" th:href="@{/booking/start}">Đặt bàn ngay</a>
+        </div>
+
+        <div class="booking-list" th:if="${!#lists.isEmpty(bookings)}">
+            <article class="booking-card" th:each="booking : ${bookings}">
+                <div class="booking-top">
+    <div>
+        <span class="pill" th:text="${booking.diningTable.location}">Tầng 1</span>
+        <h3 th:text="${booking.diningTable.name}">Bàn Lotus 01</h3>
+        <p class="muted" th:text="${booking.diningTable.summaryLine}">Mô tả</p>
+    </div>
+    <span class="status-badge"
+          th:classappend="${booking.status.name() == 'CONFIRMED'} ? ' status-confirmed' :
+                           (${booking.status.name() == 'CANCELLED'} ? ' status-cancelled' :
+                           (${booking.status.name() == 'NO_SHOW'} ? ' status-no-show' : ''))"
+          th:text="${booking.status.displayName}">Đã xác nhận</span>
+</div>
+
+                <div class="booking-meta">
+                    <div><strong>Ngày giờ:</strong> <span th:text="${#temporals.format(booking.bookingDateTime, 'dd/MM/yyyy HH:mm')}"></span></div>
+                    <div><strong>Số khách:</strong> <span th:text="${booking.guestCount}"></span></div>
+                    <div><strong>Tổng món đặt trước:</strong> <span th:text="${booking.totalAmountDisplay}"></span></div>
+                </div>
+
+                <div class="payment-strip">
+                    <div>
+                        <span class="muted-label">Phương thức</span>
+                        <strong th:text="${booking.paymentMethod != null ? booking.paymentMethod.displayName : 'Thanh toán tại nhà hàng'}">Thanh toán tại nhà hàng</strong>
+                    </div>
+                    <div>
+                        <span class="muted-label">Thanh toán</span>
+                        <span class="status-badge"
+                              th:classappend="${booking.paymentStatus != null and booking.paymentStatus.name() == 'PAID'} ? ' payment-paid' :
+                                               (${booking.paymentStatus != null and booking.paymentStatus.name() == 'PENDING'} ? ' payment-pending' :
+                                               (${booking.paymentStatus != null and booking.paymentStatus.name() == 'FAILED'} ? ' payment-failed' :
+                                               (${booking.paymentStatus != null and booking.paymentStatus.name() == 'REFUND_PENDING'} ? ' payment-refund-pending' :
+                                               (${booking.paymentStatus != null and booking.paymentStatus.name() == 'REFUNDED'} ? ' payment-refunded' : ' payment-unpaid'))))"
+                              th:text="${booking.paymentStatus != null ? booking.paymentStatus.displayName : 'Chưa thanh toán'}">Chưa thanh toán</span>
+                    </div>
+                    <div th:if="${booking.paidAt != null}">
+                        <span class="muted-label">Cập nhật lúc</span>
+                        <strong th:text="${#temporals.format(booking.paidAt, 'dd/MM/yyyy HH:mm')}">20/03/2026 19:00</strong>
+                    </div>
+                </div>
+
+                <div th:if="${booking.hasPreOrder()}" class="ordered-items">
+                    <h4>Món đã đặt trước</h4>
+                    <div class="ordered-row" th:each="item : ${booking.items}">
+                        <span th:text="${item.menuItem.name + ' x' + item.quantity}">Món ăn x1</span>
+                        <strong th:text="${item.lineTotalDisplay}">150.000 đ</strong>
+                    </div>
+                </div>
+
+                <p th:if="${booking.notes != null and !#strings.isEmpty(booking.notes)}" class="booking-note">
+                    <strong>Ghi chú:</strong> <span th:text="${booking.notes}"></span>
+                </p>
+
+                <div class="action-row action-row-wrap">
+                    <a class="btn btn-primary"
+                       th:if="${vnpayConfigured and booking.canPayOnline()}"
+                       th:href="@{/payment/vnpay/pay(bookingId=${booking.id})}"
+                       th:text="${booking.paymentStatus != null and booking.paymentStatus.name() == 'FAILED'} ? 'Thanh toán lại bằng VNPAY' : (${booking.paymentStatus != null and booking.paymentStatus.name() == 'PENDING'} ? 'Tiếp tục thanh toán VNPAY' : 'Thanh toán bằng VNPAY')">
+                        Thanh toán bằng VNPAY
+                    </a>
+                    <div class="inline-note"
+                         th:if="${!vnpayConfigured and booking.canPayOnline()}">
+                        VNPAY chưa được cấu hình trong hệ thống. Hãy cập nhật TMN code và Secret Key.
+                    </div>
+                    <div class="inline-note" th:if="${booking.paymentStatus != null and booking.paymentStatus.name() == 'REFUND_PENDING'}">
+                        Nha hang dang gui yeu cau hoan tien VNPAY cho booking nay.
+                    </div>
+                    <div class="inline-note" th:if="${booking.paymentStatus != null and booking.paymentStatus.name() == 'REFUNDED'}">
+                        Booking nay da duoc hoan tien thanh cong qua VNPAY.
+                    </div>
+                </div>
+            </article>
+        </div>
+    </div>
+</section>
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
