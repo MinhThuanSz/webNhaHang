@@ -1,6 +1,6 @@
 # Restaurant Pro - Spring Boot + XAMPP MySQL + VNPAY
 
-Day la bo source demo nha hang chuyen nghiep gom:
+Chuc nang gom:
 - Dang ky / dang nhap khach hang
 - Dat ban theo so luong nguoi
 - Chon mon truoc khi den
