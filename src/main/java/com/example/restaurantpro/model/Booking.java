@@ -1,5 +1,12 @@
 package com.example.restaurantpro.model;
 
+import java.math.BigDecimal;
+import java.text.NumberFormat;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -12,13 +19,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import java.math.BigDecimal;
-import java.text.NumberFormat;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
 
 @Entity
 @Table(name = "bookings")
@@ -37,6 +37,8 @@ public class Booking {
     private DiningTable diningTable;
 
     private LocalDateTime bookingDateTime;
+
+    private LocalDateTime endTime;
 
     private Integer guestCount;
 
@@ -83,7 +85,8 @@ public class Booking {
                 && paymentStatus != PaymentStatus.PAID
                 && paymentStatus != PaymentStatus.REFUND_PENDING
                 && paymentStatus != PaymentStatus.REFUNDED
-                && status != BookingStatus.CANCELLED;
+                && status != BookingStatus.CANCELLED
+                && status != BookingStatus.NO_SHOW;
     }
 
     public void addItem(BookingItem item) {
@@ -114,6 +117,10 @@ public class Booking {
 
     public LocalDateTime getBookingDateTime() {
         return bookingDateTime;
+    }
+
+    public LocalDateTime getEndTime() {
+        return endTime;
     }
 
     public Integer getGuestCount() {
@@ -174,6 +181,10 @@ public class Booking {
 
     public void setBookingDateTime(LocalDateTime bookingDateTime) {
         this.bookingDateTime = bookingDateTime;
+    }
+
+    public void setEndTime(LocalDateTime endTime) {
+        this.endTime = endTime;
     }
 
     public void setGuestCount(Integer guestCount) {

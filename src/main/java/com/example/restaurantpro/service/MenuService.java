@@ -9,15 +9,19 @@ import org.springframework.stereotype.Service;
 
 import com.example.restaurantpro.model.MenuCategory;
 import com.example.restaurantpro.model.MenuItem;
+import com.example.restaurantpro.repository.BookingRepository;
 import com.example.restaurantpro.repository.MenuItemRepository;
 
 @Service
 public class MenuService {
 
     private final MenuItemRepository menuItemRepository;
+    private final BookingRepository bookingRepository;
 
-    public MenuService(MenuItemRepository menuItemRepository) {
+    public MenuService(MenuItemRepository menuItemRepository,
+                       BookingRepository bookingRepository) {
         this.menuItemRepository = menuItemRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     public List<MenuItem> findAllAvailable() {
@@ -52,6 +56,12 @@ public class MenuService {
     }
 
     public void delete(Long id) {
+        MenuItem item = findById(id);
+        if (bookingRepository.existsBookingItemByMenuItemId(id)) {
+            item.setAvailable(false);
+            menuItemRepository.save(item);
+            return;
+        }
         menuItemRepository.deleteById(id);
     }
 
@@ -63,7 +73,13 @@ public class MenuService {
         return findAllForAdmin();
     }
 
-    public MenuItem saveOrUpdate(Long id, String name, MenuCategory category, String description, BigDecimal price, String imageUrl) {
+    public MenuItem saveOrUpdate(Long id,
+                                 String name,
+                                 MenuCategory category,
+                                 String description,
+                                 BigDecimal price,
+                                 String imageUrl,
+                                 boolean available) {
         MenuItem item;
         if (id == null) {
             item = new MenuItem();
@@ -74,8 +90,14 @@ public class MenuService {
         item.setCategory(category);
         item.setDescription(description);
         item.setPrice(price);
-        item.setImageUrl(imageUrl);
-        item.setAvailable(true);
+        if (imageUrl == null || imageUrl.isBlank()) {
+            if (item.getImageUrl() == null || item.getImageUrl().isBlank()) {
+                item.setImageUrl("/images/steak.svg");
+            }
+        } else {
+            item.setImageUrl(imageUrl);
+        }
+        item.setAvailable(available);
         return save(item);
     }
 }

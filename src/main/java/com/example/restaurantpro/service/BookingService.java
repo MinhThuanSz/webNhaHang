@@ -1,14 +1,17 @@
 package com.example.restaurantpro.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
 import com.example.restaurantpro.dto.DailyRevenueDto;
+import com.example.restaurantpro.dto.KitchenOrderDto;
 import com.example.restaurantpro.model.AppUser;
 import com.example.restaurantpro.model.Booking;
 import com.example.restaurantpro.model.BookingItem;
@@ -20,27 +23,25 @@ import com.example.restaurantpro.model.PaymentStatus;
 import com.example.restaurantpro.model.PaymentTransaction;
 import com.example.restaurantpro.model.PaymentTransactionType;
 import com.example.restaurantpro.repository.BookingRepository;
-import com.example.restaurantpro.repository.PaymentTransactionRepository;
 
 @Service
 public class BookingService {
+
+    private static final BigDecimal LATE_CANCEL_FEE_RATE = new BigDecimal("0.30");
 
     private final BookingRepository bookingRepository;
     private final AppUserService appUserService;
     private final TableService tableService;
     private final MenuService menuService;
-    private final PaymentTransactionRepository paymentTransactionRepository;
 
     public BookingService(BookingRepository bookingRepository,
                           AppUserService appUserService,
                           TableService tableService,
-                          MenuService menuService,
-                          PaymentTransactionRepository paymentTransactionRepository) {
+                          MenuService menuService) {
         this.bookingRepository = bookingRepository;
         this.appUserService = appUserService;
         this.tableService = tableService;
         this.menuService = menuService;
-        this.paymentTransactionRepository = paymentTransactionRepository;
     }
 
     public BigDecimal getRevenueByDate(LocalDate date) {
@@ -63,23 +64,44 @@ public class BookingService {
         return bookingRepository.getRevenueStatsByDaysInMonth(month, year, PaymentStatus.PAID);
     }
 
+    public List<KitchenOrderDto> getKitchenOrdersForActiveBookings() {
+        return bookingRepository.findKitchenOrdersForActiveBookings();
+    }
+
     public Booking createBooking(String customerPhone,
                                  Long tableId,
                                  Integer guestCount,
                                  LocalDateTime bookingDateTime,
+                                 Integer durationHours,
                                  String notes,
                                  Map<Long, Integer> selectedItems,
                                  PaymentMethod paymentMethod) {
 
+        if (bookingDateTime == null || !bookingDateTime.isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("Ban da chon sai ngay gio. Vui long chon thoi diem lon hon hien tai.");
+        }
+        int normalizedDuration = (durationHours == null || durationHours < 1) ? 2 : durationHours;
+        LocalDateTime bookingEndTime = bookingDateTime.plusHours(normalizedDuration).plusMinutes(30);
+
         AppUser customer = appUserService.findByPhone(customerPhone)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay khach hang."));
         DiningTable table = tableService.getTableById(tableId);
+        if (table.getCapacity() == null || !table.getCapacity().equals(guestCount)) {
+            throw new IllegalArgumentException("Ban da chon ban khong dung suc chua voi so khach.");
+        }
+
+        int quantity = normalizeQuantity(table.getQuantity());
+        long countConflict = bookingRepository.countConflictingBookings(tableId, bookingDateTime, bookingEndTime);
+        if (countConflict >= quantity) {
+            throw new IllegalStateException("Het ban trong loai nay trong khung gio ban chon.");
+        }
 
         Booking booking = new Booking();
         booking.setCustomer(customer);
         booking.setDiningTable(table);
         booking.setGuestCount(guestCount);
         booking.setBookingDateTime(bookingDateTime);
+        booking.setEndTime(bookingEndTime);
         booking.setNotes(notes);
         booking.setStatus(BookingStatus.CONFIRMED);
         booking.setPaymentMethod(paymentMethod == null ? PaymentMethod.PAY_AT_RESTAURANT : paymentMethod);
@@ -125,15 +147,52 @@ public class BookingService {
     }
 
     public void cancel(Long id) {
+        cancelByAdmin(id);
+    }
+
+    public void cancelByAdmin(Long id) {
         Booking booking = findById(id);
+        ensureNotFinalized(booking);
+        if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new IllegalStateException("Don nay da thanh toan. Admin khong the huy va khong the danh dau khong den.");
+        }
         booking.setStatus(BookingStatus.CANCELLED);
         bookingRepository.save(booking);
     }
 
     public void markNoShow(Long id) {
         Booking booking = findById(id);
+        ensureNotFinalized(booking);
+        if (booking.getPaymentStatus() == PaymentStatus.PAID) {
+            throw new IllegalStateException("Don nay da thanh toan. Admin khong the danh dau khong den.");
+        }
         booking.setStatus(BookingStatus.NO_SHOW);
         bookingRepository.save(booking);
+    }
+
+    public CancelResult cancelByCustomer(Long id, String customerPhone) {
+        Booking booking = findById(id);
+
+        if (booking.getCustomer() == null || booking.getCustomer().getPhone() == null
+                || !booking.getCustomer().getPhone().equals(customerPhone)) {
+            throw new IllegalArgumentException("Ban khong co quyen huy don dat ban nay.");
+        }
+
+        ensureNotFinalized(booking);
+
+        BigDecimal feeAmount = BigDecimal.ZERO;
+        boolean chargedFee = false;
+        long hoursUntilBooking = ChronoUnit.HOURS.between(LocalDateTime.now(), booking.getBookingDateTime());
+        if (booking.getPaymentStatus() == PaymentStatus.PAID && hoursUntilBooking >= 0 && hoursUntilBooking < 4) {
+            BigDecimal baseAmount = booking.getTotalAmount() == null ? BigDecimal.ZERO : booking.getTotalAmount();
+            feeAmount = baseAmount.multiply(LATE_CANCEL_FEE_RATE).setScale(0, RoundingMode.HALF_UP);
+            chargedFee = true;
+        }
+
+        booking.setStatus(BookingStatus.CANCELLED);
+        bookingRepository.save(booking);
+
+        return new CancelResult(chargedFee, feeAmount);
     }
 
     public void markPaymentPending(Booking booking, String txnRef) {
@@ -170,6 +229,9 @@ public class BookingService {
 
     public void manuallyConfirmPaid(Long bookingId, String operatorName) {
         Booking booking = findById(bookingId);
+        if (booking.getStatus() == BookingStatus.CANCELLED || booking.getStatus() == BookingStatus.NO_SHOW) {
+            throw new IllegalStateException("Don nay da ket thuc, khong the xac nhan thanh toan.");
+        }
         if (booking.getPaymentStatus() == PaymentStatus.PAID) {
             return;
         }
@@ -217,5 +279,18 @@ public class BookingService {
                 .sorted((a, b) -> a.getBookingDateTime().compareTo(b.getBookingDateTime()))
                 .limit(limit)
                 .toList();
+    }
+
+    private int normalizeQuantity(Integer quantity) {
+        return quantity != null && quantity > 0 ? quantity : 1;
+    }
+
+    private void ensureNotFinalized(Booking booking) {
+        if (booking.getStatus() == BookingStatus.CANCELLED || booking.getStatus() == BookingStatus.NO_SHOW) {
+            throw new IllegalStateException("Don dat ban nay da ket thuc, khong the thao tac them.");
+        }
+    }
+
+    public record CancelResult(boolean chargedFee, BigDecimal feeAmount) {
     }
 }

@@ -1,18 +1,29 @@
 package com.example.restaurantpro.controller;
 
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.UUID;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.restaurantpro.model.Booking;
@@ -31,6 +42,8 @@ import jakarta.servlet.http.HttpServletRequest;
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
+
+    private static final Set<String> ALLOWED_IMAGE_EXTENSIONS = Set.of("jpg", "jpeg", "png", "gif", "webp", "svg");
 
     private final TableService tableService;
     private final MenuService menuService;
@@ -92,36 +105,58 @@ public class AdminController {
     }
 
     @GetMapping("/tables")
-public String tables(@RequestParam(required = false) Long editId, Model model) {
-    model.addAttribute("tables", tableService.getAllTables());
+    public String tables(@RequestParam(required = false) Long editId,
+                         @RequestParam(required = false)
+                         @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime monitorDateTime,
+                         Model model) {
+        model.addAttribute("tables", tableService.getAdminTableResponses());
 
-    if (editId != null) {
-        model.addAttribute("tableForm", tableService.getTableById(editId));
-    } else {
-        model.addAttribute("tableForm", new DiningTable());
+        if (editId != null) {
+            model.addAttribute("tableForm", tableService.getTableById(editId));
+        } else {
+            model.addAttribute("tableForm", new DiningTable());
+        }
+
+        TableService.TableMonitoringData monitoringData = tableService.getTableMonitoringData(monitorDateTime);
+        model.addAttribute("monitorDateTime", monitoringData.selectedDateTime());
+        model.addAttribute("tableMonitoringRows", monitoringData.rows());
+        model.addAttribute("tableZoneSummaries", monitoringData.zoneSummaries());
+        model.addAttribute("totalActiveTables", monitoringData.totalActiveTables());
+        model.addAttribute("totalAvailableTables", monitoringData.totalAvailableTables());
+
+        return "admin/tables";
     }
-
-    return "admin/tables";
-}
 
     @PostMapping("/tables/save")
     public String saveTable(@RequestParam(required = false) Long id,
                             @RequestParam String name,
-                            @RequestParam String location,
+                            @RequestParam String floor,
+                            @RequestParam String roomType,
+                            @RequestParam String areaPosition,
                             @RequestParam Integer capacity,
-                            @RequestParam String style,
+                            @RequestParam(defaultValue = "1") Integer quantity,
+                            @RequestParam String tableType,
                             @RequestParam String chairType,
                             @RequestParam String description,
+                            @RequestParam(defaultValue = "false") boolean active,
                             RedirectAttributes redirectAttributes) {
-        tableService.saveOrUpdate(id, name, location, capacity, style, chairType, description);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã lưu thông tin bàn ăn.");
+        try {
+            tableService.saveOrUpdate(id, name, floor, roomType, areaPosition, capacity, quantity, tableType, chairType, description, active);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã lưu thông tin bàn ăn.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
         return "redirect:/admin/tables";
     }
 
     @PostMapping("/tables/delete")
     public String deleteTable(@RequestParam Long id, RedirectAttributes redirectAttributes) {
-        tableService.delete(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã xoá bàn ăn.");
+        try {
+            tableService.delete(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa bàn ăn khỏi CSDL.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
         return "redirect:/admin/tables";
     }
 
@@ -145,17 +180,31 @@ public String menu(@RequestParam(required = false) Long editId, Model model) {
                            @RequestParam MenuCategory category,
                            @RequestParam String description,
                            @RequestParam BigDecimal price,
-                           @RequestParam String imageUrl,
+                           @RequestParam(required = false) String imageUrl,
+                           @RequestParam(required = false) MultipartFile imageFile,
+                           @RequestParam(defaultValue = "false") boolean available,
                            RedirectAttributes redirectAttributes) {
-        menuService.saveOrUpdate(id, name, category, description, price, imageUrl);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã lưu món ăn.");
+        try {
+            String resolvedImageUrl = storeMenuImage(imageFile);
+            if (resolvedImageUrl == null || resolvedImageUrl.isBlank()) {
+                resolvedImageUrl = imageUrl;
+            }
+            menuService.saveOrUpdate(id, name, category, description, price, resolvedImageUrl, available);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã lưu món ăn.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
         return "redirect:/admin/menu";
     }
 
     @PostMapping("/menu/delete")
     public String deleteMenu(@RequestParam Long id, RedirectAttributes redirectAttributes) {
-        menuService.delete(id);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã xóa món ăn.");
+        try {
+            menuService.delete(id);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xử lý xóa món ăn. Nếu món đã có trong booking cũ thì hệ thống chuyển sang ngưng phục vụ.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
         return "redirect:/admin/menu";
     }
 
@@ -170,8 +219,27 @@ public String menu(@RequestParam(required = false) Long editId, Model model) {
     public String grantRole(@RequestParam Long userId,
                             @RequestParam RoleName roleName,
                             RedirectAttributes redirectAttributes) {
-        appUserService.grantRole(userId, roleName);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã cập nhật quyền cho tài khoản.");
+        try {
+            boolean enabled = appUserService.toggleRole(userId, roleName);
+            redirectAttributes.addFlashAttribute("successMessage",
+                    enabled ? "Đã thêm quyền cho tài khoản." : "Đã gỡ quyền khỏi tài khoản.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
+        return "redirect:/admin/users";
+    }
+
+    @PostMapping("/users/delete")
+    public String deleteUser(@RequestParam Long userId,
+                             Authentication authentication,
+                             RedirectAttributes redirectAttributes) {
+        try {
+            String operatorPhone = authentication != null ? authentication.getName() : null;
+            appUserService.deleteUser(userId, operatorPhone);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã xóa tài khoản người dùng.");
+        } catch (IllegalArgumentException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
         return "redirect:/admin/users";
     }
 
@@ -186,17 +254,31 @@ public String menu(@RequestParam(required = false) Long editId, Model model) {
         return "admin/bookings";
     }
 
+    @GetMapping("/kitchen-orders")
+    public String kitchenOrders(Model model) {
+        model.addAttribute("kitchenOrders", bookingService.getKitchenOrdersForActiveBookings());
+        return "admin/kitchen-orders";
+    }
+
     @PostMapping("/bookings/cancel")
     public String cancelBooking(@RequestParam Long bookingId, RedirectAttributes redirectAttributes) {
-        bookingService.cancel(bookingId);
-        redirectAttributes.addFlashAttribute("successMessage", "Đơn đặt bàn đã được hủy.");
+        try {
+            bookingService.cancelByAdmin(bookingId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đơn đặt bàn đã được hủy.");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
         return "redirect:/admin/bookings";
     }
 
     @PostMapping("/bookings/no-show")
     public String noShowBooking(@RequestParam Long bookingId, RedirectAttributes redirectAttributes) {
-        bookingService.markNoShow(bookingId);
-        redirectAttributes.addFlashAttribute("successMessage", "Đã đánh dấu khách không đến.");
+        try {
+            bookingService.markNoShow(bookingId);
+            redirectAttributes.addFlashAttribute("successMessage", "Đã đánh dấu khách không đến.");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
+        }
         return "redirect:/admin/bookings";
     }
 
@@ -220,5 +302,35 @@ public String menu(@RequestParam(required = false) Long editId, Model model) {
         String message = vnPayService.refundBooking(booking, operatorName, request);
         redirectAttributes.addFlashAttribute("successMessage", message);
         return "redirect:/admin/bookings";
+    }
+
+    private String storeMenuImage(MultipartFile imageFile) {
+        if (imageFile == null || imageFile.isEmpty()) {
+            return null;
+        }
+
+        String originalName = StringUtils.cleanPath(imageFile.getOriginalFilename());
+        String extension = StringUtils.getFilenameExtension(originalName);
+        if (extension == null || extension.isBlank()) {
+            throw new IllegalArgumentException("Tệp hình ảnh không hợp lệ.");
+        }
+
+        extension = extension.toLowerCase(Locale.ROOT);
+        if (!ALLOWED_IMAGE_EXTENSIONS.contains(extension)) {
+            throw new IllegalArgumentException("Chỉ cho phép tệp ảnh: jpg, jpeg, png, gif, webp, svg.");
+        }
+
+        try {
+            Path uploadDir = Paths.get("src", "main", "resources", "static", "images", "uploads");
+            Files.createDirectories(uploadDir);
+
+            String fileName = UUID.randomUUID() + "." + extension;
+            Path targetPath = uploadDir.resolve(fileName);
+            Files.copy(imageFile.getInputStream(), targetPath, StandardCopyOption.REPLACE_EXISTING);
+
+            return "/images/uploads/" + fileName;
+        } catch (IOException ex) {
+            throw new IllegalArgumentException("Không thể lưu hình ảnh. Vui lòng thử lại.");
+        }
     }
 }

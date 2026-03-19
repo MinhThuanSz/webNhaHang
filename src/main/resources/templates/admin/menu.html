@@ -22,9 +22,11 @@
         <div class="table-card">
             <h3 th:text="${menuItemForm.id != null ? 'Chỉnh sửa món ăn' : 'Thêm món mới'}">Thêm món mới</h3>
             <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
-            <form class="stack-form" th:action="@{/admin/menu/save}" th:object="${menuItemForm}" method="post">
+            <form class="stack-form" th:action="@{/admin/menu/save}" th:object="${menuItemForm}" method="post" enctype="multipart/form-data">
                 <input type="hidden" th:field="*{id}"/>
+                <input type="hidden" th:field="*{imageUrl}"/>
                 <label>Tên món
                     <input type="text" th:field="*{name}" placeholder="" required/>
                 </label>
@@ -33,9 +35,12 @@
                         <option th:each="category : ${categories}" th:value="${category}" th:text="${category.displayName}"></option>
                     </select>
                 </label>
-                <label>Link hình ảnh
-                    <input type="text" th:field="*{imageUrl}" placeholder="" required/>
+                <label>Tải ảnh từ file
+                    <input type="file" name="imageFile" accept="image/*"/>
                 </label>
+                <div class="muted-mini" th:if="${menuItemForm.imageUrl != null and !#strings.isEmpty(menuItemForm.imageUrl)}">
+                    Ảnh hiện tại: <span th:text="${menuItemForm.imageUrl}">/images/steak.svg</span>
+                </div>
                 <label>Mô tả
                     <textarea rows="4" th:field="*{description}" placeholder="Mô tả món ăn, điểm nổi bật, hương vị..."></textarea>
                 </label>
@@ -71,6 +76,9 @@
                         <p th:text="${item.description}">Mô tả</p>
                         <div class="dish-footer">
                             <strong th:text="${item.priceDisplay}">250.000 ₫</strong>
+                                <span class="status-badge"
+                                    th:classappend="${item.available} ? ' status-confirmed' : ' status-cancelled'"
+                                    th:text="${item.available ? 'Đang phục vụ' : 'Ngưng phục vụ'}">Đang phục vụ</span>
                             <div class="inline-actions">
                                 <a class="btn btn-small btn-ghost" th:href="@{/admin/menu(editId=${item.id})}">Sửa</a>
                                 <form th:action="@{/admin/menu/delete}" method="post">

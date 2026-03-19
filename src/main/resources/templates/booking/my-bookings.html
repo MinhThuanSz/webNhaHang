@@ -90,9 +90,21 @@
                        th:text="${booking.paymentStatus != null and booking.paymentStatus.name() == 'FAILED'} ? 'Thanh toán lại bằng VNPAY' : (${booking.paymentStatus != null and booking.paymentStatus.name() == 'PENDING'} ? 'Tiếp tục thanh toán VNPAY' : 'Thanh toán bằng VNPAY')">
                         Thanh toán bằng VNPAY
                     </a>
+                      <form th:if="${booking.status.name() == 'CONFIRMED'}"
+                          th:action="@{/booking/my/cancel}"
+                          method="post"
+                          class="js-cancel-confirm-form"
+                          data-confirm-message="Bạn chắc chắn muốn hủy bàn? Nếu đã thanh toán và hủy gần giờ đến, bạn sẽ mất 30% phí.">
+                        <input type="hidden" name="bookingId" th:value="${booking.id}"/>
+                        <button class="btn btn-danger" type="submit">Hủy bàn</button>
+                    </form>
                     <div class="inline-note"
                          th:if="${!vnpayConfigured and booking.canPayOnline()}">
                         VNPAY chưa được cấu hình trong hệ thống. Hãy cập nhật TMN code và Secret Key.
+                    </div>
+                    <div class="inline-note"
+                         th:if="${booking.status.name() == 'CONFIRMED' and booking.paymentStatus != null and booking.paymentStatus.name() == 'PAID'}">
+                        Nếu bạn hủy bàn trước dưới 4 tiếng so với giờ đến, hệ thống sẽ thu phí hủy 30%.
                     </div>
                     <div class="inline-note" th:if="${booking.paymentStatus != null and booking.paymentStatus.name() == 'REFUND_PENDING'}">
                         Nha hang dang gui yeu cau hoan tien VNPAY cho booking nay.
@@ -105,6 +117,72 @@
         </div>
     </div>
 </section>
+
+<div id="cancelConfirmModal" class="confirm-modal-backdrop" hidden>
+    <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="cancelConfirmTitle">
+        <h3 id="cancelConfirmTitle">Xác nhận hủy bàn</h3>
+        <p id="cancelConfirmMessage">Bạn chắc chắn muốn hủy bàn?</p>
+        <div class="confirm-modal-actions">
+            <button type="button" class="btn btn-ghost" id="cancelConfirmDismiss">Quay lại</button>
+            <button type="button" class="btn btn-danger" id="cancelConfirmAccept">Xác nhận hủy</button>
+        </div>
+    </div>
+</div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script>
+    (function () {
+        const modal = document.getElementById("cancelConfirmModal");
+        if (!modal) {
+            return;
+        }
+
+        const messageNode = document.getElementById("cancelConfirmMessage");
+        const dismissButton = document.getElementById("cancelConfirmDismiss");
+        const acceptButton = document.getElementById("cancelConfirmAccept");
+        let pendingForm = null;
+
+        function closeModal() {
+            modal.hidden = true;
+            pendingForm = null;
+        }
+
+        document.querySelectorAll(".js-cancel-confirm-form").forEach((form) => {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                pendingForm = form;
+                const message = form.dataset.confirmMessage || "Bạn chắc chắn muốn hủy bàn?";
+                if (messageNode) {
+                    messageNode.textContent = message;
+                }
+                modal.hidden = false;
+            });
+        });
+
+        if (dismissButton) {
+            dismissButton.addEventListener("click", closeModal);
+        }
+
+        if (acceptButton) {
+            acceptButton.addEventListener("click", function () {
+                if (pendingForm) {
+                    pendingForm.submit();
+                }
+            });
+        }
+
+        modal.addEventListener("click", function (event) {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener("keydown", function (event) {
+            if (event.key === "Escape" && !modal.hidden) {
+                closeModal();
+            }
+        });
+    })();
+</script>
 </body>
 </html>

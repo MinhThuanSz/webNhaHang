@@ -27,7 +27,15 @@ public class DiningTable {
     @Column(length = 800)
     private String description;
 
+    private String floor;
+
+    private String roomType;
+
+    private String areaPosition;
+
     private String location;
+
+    private Integer quantity = 1;
 
     private boolean active = true;
 
@@ -41,11 +49,47 @@ public class DiningTable {
         this.capacity = capacity;
         this.description = description;
         this.location = location;
+        this.quantity = 1;
+        this.active = active;
+    }
+
+    public DiningTable(String name,
+                      String tableType,
+                      String chairType,
+                      Integer capacity,
+                      String description,
+                      String floor,
+                      String roomType,
+                      String areaPosition,
+                      boolean active) {
+        this.name = name;
+        this.tableType = tableType;
+        this.chairType = chairType;
+        this.capacity = capacity;
+        this.description = description;
+        this.floor = floor;
+        this.roomType = roomType;
+        this.areaPosition = areaPosition;
+        this.quantity = 1;
         this.active = active;
     }
 
     public String getSummaryLine() {
         return tableType + " - " + chairType + " - Sức chứa " + capacity + " người";
+    }
+
+    public String getLocationDisplay() {
+        String value = (floor == null ? "" : floor.trim())
+                + (roomType == null || roomType.isBlank() ? "" : " / " + roomType.trim())
+                + (areaPosition == null || areaPosition.isBlank() ? "" : " / " + areaPosition.trim());
+        value = value.strip();
+        if (value.startsWith("/")) {
+            value = value.substring(1).trim();
+        }
+        if (value.isBlank()) {
+            return location;
+        }
+        return value;
     }
 
     public Long getId() {
@@ -72,8 +116,25 @@ public class DiningTable {
         return description;
     }
 
+    public String getFloor() {
+        return floor;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+
+    public String getAreaPosition() {
+        return areaPosition;
+    }
+
     public String getLocation() {
-        return location;
+        String display = getLocationDisplay();
+        return display == null || display.isBlank() ? location : display;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
     }
 
     public boolean isActive() {
@@ -104,8 +165,24 @@ public class DiningTable {
         this.description = description;
     }
 
+    public void setFloor(String floor) {
+        this.floor = floor;
+    }
+
+    public void setRoomType(String roomType) {
+        this.roomType = roomType;
+    }
+
+    public void setAreaPosition(String areaPosition) {
+        this.areaPosition = areaPosition;
+    }
+
     public void setLocation(String location) {
         this.location = location;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
     public void setActive(boolean active) {

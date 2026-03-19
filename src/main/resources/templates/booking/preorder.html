@@ -29,6 +29,7 @@
                 <input type="hidden" name="tableId" th:value="${selectedTable.id}"/>
                 <input type="hidden" name="guestCount" th:value="${guestCount}"/>
                 <input type="hidden" name="bookingDateTime" th:value="${bookingDateTime}"/>
+                <input type="hidden" name="durationHours" th:value="${durationHours}"/>
 
                 <div class="section-heading left preorder-heading">
                     <span class="section-tag">Thực đơn chọn trước</span>
@@ -158,6 +159,11 @@
             </div>
 
             <div class="summary-row">
+                <span>Kết thúc dự kiến</span>
+                <strong th:text="${#temporals.format(bookingEndTime, 'dd/MM/yyyy HH:mm')}">20/03/2026 21:30</strong>
+            </div>
+
+            <div class="summary-row">
                 <span>Món đã chọn</span>
                 <strong id="selectedCount">0 món</strong>
             </div>
@@ -175,6 +181,7 @@
                 <input type="hidden" name="tableId" th:value="${selectedTable.id}"/>
                 <input type="hidden" name="guestCount" th:value="${guestCount}"/>
                 <input type="hidden" name="bookingDateTime" th:value="${bookingDateTime}"/>
+                <input type="hidden" name="durationHours" th:value="${durationHours}"/>
                 <button class="btn btn-ghost full-width" type="submit">Chỉ giữ bàn, chưa chọn món</button>
             </form>
         </aside>

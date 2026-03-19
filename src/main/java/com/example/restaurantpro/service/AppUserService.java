@@ -1,25 +1,31 @@
 package com.example.restaurantpro.service;
 
-import com.example.restaurantpro.dto.RegisterRequest;
-import com.example.restaurantpro.model.AppUser;
-import com.example.restaurantpro.model.RoleName;
-import com.example.restaurantpro.repository.AppUserRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.example.restaurantpro.dto.RegisterRequest;
+import com.example.restaurantpro.model.AppUser;
+import com.example.restaurantpro.model.RoleName;
+import com.example.restaurantpro.repository.AppUserRepository;
+import com.example.restaurantpro.repository.BookingRepository;
+
 @Service
 public class AppUserService {
 
     private final AppUserRepository appUserRepository;
+    private final BookingRepository bookingRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public AppUserService(AppUserRepository appUserRepository, PasswordEncoder passwordEncoder) {
+    public AppUserService(AppUserRepository appUserRepository,
+                          BookingRepository bookingRepository,
+                          PasswordEncoder passwordEncoder) {
         this.appUserRepository = appUserRepository;
+        this.bookingRepository = bookingRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -75,5 +81,38 @@ public class AppUserService {
                 .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng."));
         user.getRoles().add(roleName);
         appUserRepository.save(user);
+    }
+
+    public boolean toggleRole(Long userId, RoleName roleName) {
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng."));
+
+        if (user.getRoles().contains(roleName)) {
+            if (user.getRoles().size() <= 1) {
+                throw new IllegalArgumentException("Tài khoản phải có ít nhất một quyền.");
+            }
+            user.getRoles().remove(roleName);
+            appUserRepository.save(user);
+            return false;
+        }
+
+        user.getRoles().add(roleName);
+        appUserRepository.save(user);
+        return true;
+    }
+
+    public void deleteUser(Long userId, String operatorPhone) {
+        AppUser user = appUserRepository.findById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy người dùng."));
+
+        if (operatorPhone != null && operatorPhone.equals(user.getPhone())) {
+            throw new IllegalArgumentException("Không thể tự xóa tài khoản đang đăng nhập.");
+        }
+
+        if (bookingRepository.existsByCustomer_Id(userId)) {
+            throw new IllegalArgumentException("Không thể xóa người dùng này vì đã có booking liên quan.");
+        }
+
+        appUserRepository.delete(user);
     }
 }

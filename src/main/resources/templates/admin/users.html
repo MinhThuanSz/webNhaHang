@@ -21,6 +21,7 @@
     <div class="container">
         <div class="table-card">
             <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
             <div class="table-card-head">
                 <div>
                     <span class="section-tag">Danh sách tài khoản</span>
@@ -36,6 +37,7 @@
                         <th>Số điện thoại</th>
                         <th>Quyền hiện tại</th>
                         <th>Nâng quyền nhanh</th>
+                        <th>Xóa tài khoản</th>
                     </tr>
                     </thead>
                     <tbody>
@@ -48,9 +50,19 @@
                                 <form th:each="role : ${roles}" th:action="@{/admin/users/grant}" method="post">
                                     <input type="hidden" name="userId" th:value="${user.id}"/>
                                     <input type="hidden" name="roleName" th:value="${role}"/>
-                                    <button type="submit" class="btn btn-small btn-ghost" th:text="${role.displayName}">Admin</button>
+                                    <button type="submit"
+                                            class="btn btn-small"
+                                            th:classappend="${user.roles.contains(role)} ? ' btn-primary' : ' btn-ghost'"
+                                            th:text="${role.displayName}">Admin</button>
                                 </form>
                             </div>
+                        </td>
+                        <td>
+                            <form th:action="@{/admin/users/delete}" method="post"
+                                  onsubmit="return confirm('Bạn chắc chắn muốn xóa tài khoản này?');">
+                                <input type="hidden" name="userId" th:value="${user.id}"/>
+                                <button type="submit" class="btn btn-small btn-danger">Xóa</button>
+                            </form>
                         </td>
                     </tr>
                     </tbody>

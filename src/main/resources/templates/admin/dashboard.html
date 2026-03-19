@@ -51,11 +51,15 @@
                 <h3>Quản lý menu</h3>
                 <p>Thêm món, cập nhật giá, hình ảnh và mô tả.</p>
             </a>
+            <a class="shortcut-card" sec:authorize="hasAnyRole('ADMIN','MENU_MANAGER')" th:href="@{/admin/kitchen-orders}">
+                <h3>Theo dõi order bếp</h3>
+                <p>Xem các món đã gọi theo từng bàn đang phục vụ.</p>
+            </a>
             <a class="shortcut-card" sec:authorize="hasRole('ADMIN')" th:href="@{/admin/users}">
                 <h3>Quản lý người dùng</h3>
                 <p>Xem tài khoản và nâng cấp quyền truy cập.</p>
             </a>
-            <a class="shortcut-card" th:href="@{/admin/bookings}">
+            <a class="shortcut-card" sec:authorize="hasAnyRole('ADMIN','TABLE_MANAGER')" th:href="@{/admin/bookings}">
                 <h3>Xử lý booking</h3>
                 <p>Hủy bàn nếu khách không đến và theo dõi theo ngày.</p>
             </a>
@@ -72,7 +76,7 @@
                     <span class="section-tag">Lịch gần nhất</span>
                     <h3>Đã xác nhận</h3>
                 </div>
-                <a class="text-link" th:href="@{/admin/bookings}">Xem tất cả</a>
+                <a class="text-link" sec:authorize="hasAnyRole('ADMIN','TABLE_MANAGER')" th:href="@{/admin/bookings}">Xem tất cả</a>
             </div>
 
             <div class="table-responsive">

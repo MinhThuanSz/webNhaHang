@@ -21,6 +21,7 @@
     <div class="container">
         <div class="table-card">
             <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
             <form class="filter-bar" th:action="@{/admin/bookings}" method="get">
                 <label>Lọc theo ngày
@@ -84,7 +85,7 @@
                         </td>
                         <td>
                             <div class="inline-actions inline-actions-stack">
-                                <form th:if="${booking.paymentStatus == null || (booking.paymentStatus.name() != 'PAID' and booking.paymentStatus.name() != 'REFUND_PENDING' and booking.paymentStatus.name() != 'REFUNDED')}"
+                                <form th:if="${booking.status.name() == 'CONFIRMED' and (booking.paymentStatus == null || (booking.paymentStatus.name() != 'PAID' and booking.paymentStatus.name() != 'REFUND_PENDING' and booking.paymentStatus.name() != 'REFUNDED'))}"
                                       th:action="@{/admin/bookings/confirm-paid}" method="post">
                                     <input type="hidden" name="bookingId" th:value="${booking.id}"/>
                                     <button class="btn btn-small btn-primary" type="submit">Xác nhận đã thanh toán</button>
@@ -96,15 +97,18 @@
                                     <button class="btn btn-small btn-outline" type="submit">Hoàn tiền VNPAY</button>
                                 </form>
 
-                                <form th:if="${booking.status.name() != 'CANCELLED'}" th:action="@{/admin/bookings/cancel}" method="post">
+                                <form th:if="${booking.status.name() == 'CONFIRMED' and (booking.paymentStatus == null || booking.paymentStatus.name() != 'PAID')}" th:action="@{/admin/bookings/cancel}" method="post">
                                     <input type="hidden" name="bookingId" th:value="${booking.id}"/>
                                     <button class="btn btn-small btn-danger" type="submit">Hủy bàn</button>
                                 </form>
 
-                                <form th:if="${booking.status.name() != 'NO_SHOW'}" th:action="@{/admin/bookings/no-show}" method="post">
+                                <form th:if="${booking.status.name() == 'CONFIRMED' and (booking.paymentStatus == null || booking.paymentStatus.name() != 'PAID')}" th:action="@{/admin/bookings/no-show}" method="post">
                                     <input type="hidden" name="bookingId" th:value="${booking.id}"/>
                                     <button class="btn btn-small btn-ghost" type="submit">Không đến</button>
                                 </form>
+                                <div class="muted-mini" th:if="${booking.status.name() != 'CONFIRMED' or (booking.paymentStatus != null and booking.paymentStatus.name() == 'PAID')}">
+                                    Không còn thao tác cho đơn này.
+                                </div>
                             </div>
                         </td>
                     </tr>

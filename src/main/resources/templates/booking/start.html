@@ -21,19 +21,51 @@
     <div class="container booking-layout">
         <div class="content-panel">
             <h3>Thông tin đặt bàn</h3>
+            <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
             <form class="stack-form" th:action="@{/booking/tables}" method="post">
                 <div class="booking-form-grid">
     <label>Số lượng người
-        <input type="number" name="guestCount" min="1" max="30" value="4" required/>
+        <input type="number" name="guestCount" min="1" max="30" th:value="${guestCount != null ? guestCount : 4}" required/>
+    </label>
+
+    <label>Thời lượng dùng bữa (giờ)
+        <input type="number" name="durationHours" min="1" max="6" th:value="${durationHours != null ? durationHours : defaultDurationHours}" required/>
     </label>
 
     <label>Ngày giờ đến
-        <input type="datetime-local" name="bookingDateTime" required/>
+        <input type="datetime-local" name="bookingDateTime" required
+               th:value="${bookingDateTime != null ? #temporals.format(bookingDateTime, 'yyyy-MM-dd''T''HH:mm') : null}"
+               th:attr="min=${#temporals.format(minDateTime, 'yyyy-MM-dd''T''HH:mm')}"/>
     </label>
 </div>
 
 <button class="btn btn-primary" type="submit">Tìm bàn phù hợp</button>
             </form>
+
+            <div class="alert info" th:if="${bookingSuggestions != null}">
+                <strong>Gợi ý từ hệ thống</strong>
+                <p>Bàn bạn chọn đã bị trùng lịch. Bạn có thể thử các lựa chọn dưới đây.</p>
+
+                <p th:if="${bookingSuggestions.alternativeTables != null and !#lists.isEmpty(bookingSuggestions.alternativeTables)}">
+                    <strong>Bàn khác cùng thời điểm:</strong>
+                </p>
+                <ul th:if="${bookingSuggestions.alternativeTables != null and !#lists.isEmpty(bookingSuggestions.alternativeTables)}">
+                    <li th:each="table : ${bookingSuggestions.alternativeTables}"
+                        th:text="${table.tableName + ' - ' + table.capacity + ' cho - ' + table.location}">
+                        Ban A - 4 cho - Tang 1
+                    </li>
+                </ul>
+
+                <p th:if="${bookingSuggestions.availableTimeSlots != null and !#lists.isEmpty(bookingSuggestions.availableTimeSlots)}">
+                    <strong>Khung giờ khác cho cùng bàn:</strong>
+                </p>
+                <ul th:if="${bookingSuggestions.availableTimeSlots != null and !#lists.isEmpty(bookingSuggestions.availableTimeSlots)}">
+                    <li th:each="slot : ${bookingSuggestions.availableTimeSlots}"
+                        th:text="${#temporals.format(slot.startTime, 'dd/MM HH:mm') + ' - ' + #temporals.format(slot.endTime, 'HH:mm')}">
+                        20/03 18:30 - 21:00
+                    </li>
+                </ul>
+            </div>
         </div>
 
         <div class="info-card large">

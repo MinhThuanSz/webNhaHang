@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Theo doi order bep | Rivière Restaurant</title>
+    <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}"/>
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<section class="page-header admin">
+    <div class="container">
+        <span class="section-tag">Kitchen orders</span>
+        <h1>Theo doi order dang phuc vu</h1>
+        <p>Danh sach mon da goi theo tung ban tu cac booking dang hoat dong.</p>
+    </div>
+</section>
+
+<section class="section">
+    <div class="container">
+        <div class="table-card">
+            <div class="table-card-head">
+                <div>
+                    <span class="section-tag">Bep</span>
+                    <h3>Mon can xu ly</h3>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Ban</th>
+                        <th>Mon an</th>
+                        <th>So luong</th>
+                        <th>Ghi chu cua khach</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="order : ${kitchenOrders}">
+                        <td th:text="${order.tableName}">Ban Lotus 01</td>
+                        <td th:text="${order.menuItemName}">Vit quay Bac Kinh</td>
+                        <td th:text="${order.quantity}">2</td>
+                        <td th:text="${order.customerNotes != null and !#strings.isEmpty(order.customerNotes) ? order.customerNotes : '-'}">Khong hanh</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(kitchenOrders)}">
+                        <td colspan="4" class="empty-cell">Chua co mon nao can xu ly.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+</body>
+</html>

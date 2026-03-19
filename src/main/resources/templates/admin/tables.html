@@ -22,6 +22,7 @@
         <div class="table-card">
             <h3 th:text="${tableForm.id != null ? 'Chỉnh sửa bàn ăn' : 'Thêm bàn mới'}">Thêm bàn mới</h3>
             <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
+            <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
             <form class="stack-form" th:action="@{/admin/tables/save}" th:object="${tableForm}" method="post">
                 <input type="hidden" th:field="*{id}"/>
@@ -37,8 +38,17 @@
                 <label>Sức chứa
                     <input type="number" th:field="*{capacity}" min="1" max="50" required/>
                 </label>
+                <label>Số lượng
+                    <input type="number" th:field="*{quantity}" min="1" max="100" required/>
+                </label>
+                <label>Tầng
+                    <input type="text" th:field="*{floor}" placeholder="Tầng 1" required/>
+                </label>
+                <label>Loại phòng
+                    <input type="text" th:field="*{roomType}" placeholder="Phòng VIP" required/>
+                </label>
                 <label>Vị trí
-                    <input type="text" th:field="*{location}" placeholder="Tầng 1 / Phòng VIP / Sân vườn" required/>
+                    <input type="text" th:field="*{areaPosition}" placeholder="Gần cửa sổ / Trung tâm" required/>
                 </label>
                 <label>Mô tả
                     <textarea rows="4" th:field="*{description}" placeholder="Mô tả trải nghiệm, vị trí, phong cách..."></textarea>
@@ -59,6 +69,59 @@
         <div class="table-card">
             <div class="table-card-head">
                 <div>
+                    <span class="section-tag">Theo dõi theo giờ</span>
+                    <h3>Giám sát trạng thái bàn theo thời gian</h3>
+                </div>
+            </div>
+
+            <form class="filter-bar" th:action="@{/admin/tables}" method="get" id="monitorForm">
+                <label>Ngày giờ theo dõi
+                    <input type="datetime-local" name="monitorDateTime" id="monitorDateTimeInput" th:value="${#temporals.format(monitorDateTime, 'yyyy-MM-dd''T''HH:mm')}"/>
+                </label>
+                <button class="btn btn-primary" type="submit">Xem trạng thái</button>
+            </form>
+            <p class="muted-mini">Hệ thống tự động cập nhật theo thời gian hiện tại mỗi 30 giây.</p>
+
+            <div class="booking-meta">
+                <div><strong>Tổng bàn hoạt động:</strong> <span th:text="${totalActiveTables}">0</span></div>
+                <div><strong>Còn trống:</strong> <span th:text="${totalAvailableTables}">0</span></div>
+                <div><strong>Đang sử dụng:</strong> <span th:text="${totalActiveTables - totalAvailableTables}">0</span></div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Tên bàn</th>
+                        <th>Loại bàn</th>
+                        <th>Tầng</th>
+                        <th>Loại phòng</th>
+                        <th>Vị trí</th>
+                        <th>Số lượng</th>
+                        <th>Còn lại</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${tableMonitoringRows}">
+                        <td th:text="${row.table.name}">Bàn Lotus 01</td>
+                        <td th:text="${row.table.tableType}">Bàn tròn</td>
+                        <td th:text="${row.table.floor}">Tầng 1</td>
+                        <td th:text="${row.table.roomType}">Phòng VIP</td>
+                        <td th:text="${row.table.areaPosition}">Gần cửa sổ</td>
+                        <td th:text="${row.totalQuantity}">4</td>
+                        <td th:text="${row.availableQuantity}">2</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(tableMonitoringRows)}">
+                        <td colspan="7" class="empty-cell">Không có dữ liệu bàn hoạt động.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <div class="table-card-head">
+                <div>
                     <span class="section-tag">Danh sách bàn</span>
                     <h3>Tất cả bàn trong hệ thống</h3>
                 </div>
@@ -69,7 +132,9 @@
                     <tr>
                         <th>Tên bàn</th>
                         <th>Mô tả ngắn</th>
-                        <th>Vị trí</th>
+                        <th>Khu vực</th>
+                        <th>Số lượng</th>
+                        <th>Còn lại</th>
                         <th>Trạng thái</th>
                         <th>Thao tác</th>
                     </tr>
@@ -77,9 +142,11 @@
                     <tbody>
                     <tr th:each="table : ${tables}">
                         <td th:text="${table.name}">Bàn Lotus 01</td>
-                        <td th:text="${table.summaryLine}">Bàn tròn</td>
-                        <td th:text="${table.location}">Tầng 1</td>
-                        <td th:text="${table.active ? 'Đang dùng' : 'Ngưng'}">Đang dùng</td>
+                        <td th:text="${table.tableType + ' - Sức chứa ' + table.capacity + ' người'}">Bàn tròn - Sức chứa 4 người</td>
+                        <td th:text="${table.locationDisplay}">Tầng 1 / VIP / Gần cửa sổ</td>
+                        <td th:text="${table.quantity}">3</td>
+                        <td th:text="${table.availableQuantity}">2</td>
+                        <td th:text="${table.active ? 'Đang hoạt động' : 'Ngưng hoạt động'}">Đang hoạt động</td>
                         <td>
                             <div class="inline-actions">
                                 <a class="btn btn-small btn-ghost" th:href="@{/admin/tables(editId=${table.id})}">Sửa</a>
@@ -94,7 +161,83 @@
                 </table>
             </div>
         </div>
+
+        <div class="table-card">
+            <div class="table-card-head">
+                <div>
+                    <span class="section-tag">Chi tiết theo giờ</span>
+                    <h3>Trạng thái từng bàn tại thời điểm đã chọn</h3>
+                </div>
+            </div>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Tên bàn</th>
+                        <th>Khu vực</th>
+                        <th>Trạng thái bàn</th>
+                        <th>Giờ booking</th>
+                        <th>Trạng thái booking</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="row : ${tableMonitoringRows}">
+                        <td th:text="${row.table.name}">Bàn Lotus 01</td>
+                        <td th:text="${row.table.locationDisplay}">Tầng 1 / VIP / Gần cửa sổ</td>
+                        <td th:text="${row.statusText}">Đang sử dụng</td>
+                        <td th:text="${row.bookingDateTime != null ? #temporals.format(row.bookingDateTime, 'dd/MM/yyyy HH:mm') : '-'}">18/03/2026 18:00</td>
+                        <td th:text="${row.bookingStatus != null ? row.bookingStatus : '-'}">Đã xác nhận</td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(tableMonitoringRows)}">
+                        <td colspan="5" class="empty-cell">Không có dữ liệu theo dõi bàn.</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </section>
+<script>
+    (function () {
+        const form = document.getElementById("monitorForm");
+        const input = document.getElementById("monitorDateTimeInput");
+        if (!form || !input) {
+            return;
+        }
+
+        function pad(num) {
+            return String(num).padStart(2, "0");
+        }
+
+        function toDateTimeLocalValue(date) {
+            const year = date.getFullYear();
+            const month = pad(date.getMonth() + 1);
+            const day = pad(date.getDate());
+            const hour = pad(date.getHours());
+            const minute = pad(date.getMinutes());
+            return year + "-" + month + "-" + day + "T" + hour + ":" + minute;
+        }
+
+        function submitMonitorForm() {
+            if (typeof form.requestSubmit === "function") {
+                form.requestSubmit();
+            } else {
+                form.submit();
+            }
+        }
+
+        function refreshByCurrentTime() {
+            const nowValue = toDateTimeLocalValue(new Date());
+            if (input.value !== nowValue) {
+                input.value = nowValue;
+                submitMonitorForm();
+            }
+        }
+
+        // Sync immediately after page load so the monitor does not stay on old time.
+        setTimeout(refreshByCurrentTime, 300);
+        setInterval(refreshByCurrentTime, 30000);
+    })();
+</script>
 </body>
 </html>

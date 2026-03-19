@@ -12,16 +12,23 @@
 <section class="page-header">
     <div class="container">
         <span class="section-tag">Bước 2</span>
-        <h1>Danh sách bàn phù hợp cho <span th:text="${guestCount}">4</span> khách.</h1>
+        <h1>Danh sách bàn cho đúng <span th:text="${guestCount}">4</span> khách.</h1>
         <p>Thời gian dự kiến: <strong th:text="${#temporals.format(bookingDateTime, 'dd/MM/yyyy HH:mm')}">20/03/2026 19:00</strong></p>
+        <p>Khung giờ giữ bàn: <strong th:text="${#temporals.format(bookingDateTime, 'HH:mm') + ' - ' + #temporals.format(bookingEndTime, 'HH:mm')}">19:00 - 21:30</strong> (<span th:text="${durationHours}">2</span> giờ + 30 phút chuẩn bị)</p>
+        <p>
+            Tổng bàn loại này: <strong th:text="${totalTables}">0</strong> |
+            Còn trống: <strong th:text="${availableTables}">0</strong>
+        </p>
     </div>
 </section>
 
 <section class="section">
     <div class="container">
         <div th:if="${#lists.isEmpty(tables)}" class="empty-state">
-            <h3>Hiện chưa có bàn phù hợp.</h3>
-            <p>Hãy thử giảm số lượng khách hoặc chọn khung giờ khác.</p>
+            <h3 th:if="${totalTables == 0}">Hiện không có loại bàn đúng sức chứa này.</h3>
+            <h3 th:if="${totalTables > 0}">Hết bàn cho khung giờ bạn đã chọn.</h3>
+            <p th:if="${totalTables == 0}">Hãy thử thay đổi số lượng khách để tìm loại bàn khác.</p>
+            <p th:if="${totalTables > 0}">Tất cả bàn loại này đã có người đặt trong khung thời gian gần đó.</p>
             <a class="btn btn-primary" th:href="@{/booking/start}">Quay lại</a>
         </div>
 
@@ -36,6 +43,7 @@
                     <input type="hidden" name="tableId" th:value="${table.id}"/>
                     <input type="hidden" name="guestCount" th:value="${guestCount}"/>
                     <input type="hidden" name="bookingDateTime" th:value="${bookingDateTime}"/>
+                    <input type="hidden" name="durationHours" th:value="${durationHours}"/>
                     <button class="btn btn-primary full-width" type="submit">Chọn bàn này</button>
                 </form>
             </article>
