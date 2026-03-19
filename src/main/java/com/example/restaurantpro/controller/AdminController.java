@@ -23,9 +23,12 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.example.restaurantpro.dto.TableStatusResponseDto;
+import com.example.restaurantpro.exception.TableInUseException;
 import com.example.restaurantpro.model.Booking;
 import com.example.restaurantpro.model.DiningTable;
 import com.example.restaurantpro.model.MenuCategory;
@@ -110,6 +113,7 @@ public class AdminController {
                          @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime monitorDateTime,
                          Model model) {
         model.addAttribute("tables", tableService.getAdminTableResponses());
+        model.addAttribute("tableGroups", tableService.getTableGroups(monitorDateTime));
 
         if (editId != null) {
             model.addAttribute("tableForm", tableService.getTableById(editId));
@@ -127,21 +131,29 @@ public class AdminController {
         return "admin/tables";
     }
 
+    @GetMapping("/tables/status")
+    @ResponseBody
+    public TableStatusResponseDto getTableStatusApi(
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime checkTime) {
+        return tableService.getTableStatusAt(checkTime);
+    }
+
     @PostMapping("/tables/save")
     public String saveTable(@RequestParam(required = false) Long id,
                             @RequestParam String name,
+                            @RequestParam String tableNumber,
                             @RequestParam String floor,
                             @RequestParam String roomType,
                             @RequestParam String areaPosition,
                             @RequestParam Integer capacity,
-                            @RequestParam(defaultValue = "1") Integer quantity,
                             @RequestParam String tableType,
                             @RequestParam String chairType,
                             @RequestParam String description,
                             @RequestParam(defaultValue = "false") boolean active,
                             RedirectAttributes redirectAttributes) {
         try {
-            tableService.saveOrUpdate(id, name, floor, roomType, areaPosition, capacity, quantity, tableType, chairType, description, active);
+            tableService.saveOrUpdate(id, name, tableNumber, floor, roomType, areaPosition, capacity, tableType, chairType, description, active);
             redirectAttributes.addFlashAttribute("successMessage", "Đã lưu thông tin bàn ăn.");
         } catch (IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
@@ -154,7 +166,7 @@ public class AdminController {
         try {
             tableService.delete(id);
             redirectAttributes.addFlashAttribute("successMessage", "Đã xóa bàn ăn khỏi CSDL.");
-        } catch (IllegalArgumentException ex) {
+        } catch (TableInUseException | IllegalArgumentException ex) {
             redirectAttributes.addFlashAttribute("errorMessage", ex.getMessage());
         }
         return "redirect:/admin/tables";

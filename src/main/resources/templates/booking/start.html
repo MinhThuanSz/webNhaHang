@@ -33,9 +33,25 @@
     </label>
 
     <label>Ngày giờ đến
-        <input type="datetime-local" name="bookingDateTime" required
-               th:value="${bookingDateTime != null ? #temporals.format(bookingDateTime, 'yyyy-MM-dd''T''HH:mm') : null}"
-               th:attr="min=${#temporals.format(minDateTime, 'yyyy-MM-dd''T''HH:mm')}"/>
+        <input type="hidden"
+               id="bookingDateTimeHidden"
+               name="bookingDateTime"
+               required
+               th:value="${bookingDateTime != null ? #temporals.format(bookingDateTime, 'yyyy-MM-dd''T''HH:mm') : #temporals.format(minDateTime, 'yyyy-MM-dd''T''HH:mm')}"/>
+        <input type="hidden"
+               id="minBookingDateTime"
+               th:value="${#temporals.format(minDateTime, 'yyyy-MM-dd''T''HH:mm')}"/>
+
+        <div class="booking-form-grid" style="grid-template-columns: repeat(4, minmax(90px, 1fr)); margin-top: 8px;">
+            <input type="date" id="bookingDate" required/>
+            <select id="bookingHour" required></select>
+            <select id="bookingMinute" required></select>
+            <select id="bookingAmPm" required>
+                <option value="AM">AM</option>
+                <option value="PM">PM</option>
+            </select>
+        </div>
+        <small class="muted-mini" id="bookingDateTimePreview">Đang chọn giờ...</small>
     </label>
 </div>
 
@@ -89,5 +105,160 @@
     </div>
 </section>
 <div th:replace="~{fragments/footer :: footer}"></div>
+<script>
+    (function () {
+        const bookingForm = document.querySelector("form.stack-form");
+        const hiddenDateTime = document.getElementById("bookingDateTimeHidden");
+        const minDateTime = document.getElementById("minBookingDateTime");
+
+        const bookingDate = document.getElementById("bookingDate");
+        const bookingHour = document.getElementById("bookingHour");
+        const bookingMinute = document.getElementById("bookingMinute");
+        const bookingAmPm = document.getElementById("bookingAmPm");
+        const preview = document.getElementById("bookingDateTimePreview");
+
+        if (!bookingForm || !hiddenDateTime || !bookingDate || !bookingHour || !bookingMinute || !bookingAmPm || !preview) {
+            return;
+        }
+
+        function pad(value) {
+            return String(value).padStart(2, "0");
+        }
+
+        function parseIsoLocal(isoValue) {
+            if (!isoValue || typeof isoValue !== "string") {
+                return null;
+            }
+            const parts = isoValue.split("T");
+            if (parts.length !== 2) {
+                return null;
+            }
+            const datePart = parts[0].split("-").map(Number);
+            const timePart = parts[1].split(":").map(Number);
+            if (datePart.length !== 3 || timePart.length < 2) {
+                return null;
+            }
+            const dt = new Date(datePart[0], datePart[1] - 1, datePart[2], timePart[0], timePart[1], 0, 0);
+            if (Number.isNaN(dt.getTime())) {
+                return null;
+            }
+            return dt;
+        }
+
+        function toIsoLocal(date) {
+            return date.getFullYear()
+                + "-" + pad(date.getMonth() + 1)
+                + "-" + pad(date.getDate())
+                + "T" + pad(date.getHours())
+                + ":" + pad(date.getMinutes());
+        }
+
+        function toDisplay12h(date) {
+            let hour = date.getHours();
+            const ampm = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12;
+            if (hour === 0) {
+                hour = 12;
+            }
+            return pad(date.getDate()) + "/" + pad(date.getMonth() + 1) + "/" + date.getFullYear()
+                + " " + pad(hour) + ":" + pad(date.getMinutes()) + " " + ampm;
+        }
+
+        function fillHourOptions() {
+            for (let h = 1; h <= 12; h += 1) {
+                const option = document.createElement("option");
+                option.value = String(h);
+                option.textContent = String(h);
+                bookingHour.appendChild(option);
+            }
+        }
+
+        function fillMinuteOptions() {
+            for (let m = 0; m <= 59; m += 1) {
+                const option = document.createElement("option");
+                option.value = pad(m);
+                option.textContent = pad(m);
+                bookingMinute.appendChild(option);
+            }
+        }
+
+        function setControlsFromDate(date) {
+            bookingDate.value = date.getFullYear() + "-" + pad(date.getMonth() + 1) + "-" + pad(date.getDate());
+
+            let hour = date.getHours();
+            const ampm = hour >= 12 ? "PM" : "AM";
+            hour = hour % 12;
+            if (hour === 0) {
+                hour = 12;
+            }
+
+            bookingHour.value = String(hour);
+            bookingMinute.value = pad(date.getMinutes());
+            bookingAmPm.value = ampm;
+        }
+
+        function getDateFromControls() {
+            if (!bookingDate.value) {
+                return null;
+            }
+
+            let hour = Number(bookingHour.value);
+            const minute = Number(bookingMinute.value);
+            const ampm = bookingAmPm.value;
+
+            if (ampm === "AM" && hour === 12) {
+                hour = 0;
+            } else if (ampm === "PM" && hour < 12) {
+                hour += 12;
+            }
+
+            const [year, month, day] = bookingDate.value.split("-").map(Number);
+            const dt = new Date(year, month - 1, day, hour, minute, 0, 0);
+            if (Number.isNaN(dt.getTime())) {
+                return null;
+            }
+
+            return dt;
+        }
+
+        function syncHiddenAndPreview() {
+            const selectedDate = getDateFromControls();
+            if (!selectedDate) {
+                preview.textContent = "Vui lòng chọn ngày giờ hợp lệ.";
+                return null;
+            }
+
+            hiddenDateTime.value = toIsoLocal(selectedDate);
+            preview.textContent = "Bạn chọn: " + toDisplay12h(selectedDate);
+            return selectedDate;
+        }
+
+        fillHourOptions();
+        fillMinuteOptions();
+
+        const initialDate = parseIsoLocal(hiddenDateTime.value) || parseIsoLocal(minDateTime ? minDateTime.value : "") || new Date();
+        setControlsFromDate(initialDate);
+        syncHiddenAndPreview();
+
+        bookingDate.addEventListener("change", syncHiddenAndPreview);
+        bookingHour.addEventListener("change", syncHiddenAndPreview);
+        bookingMinute.addEventListener("change", syncHiddenAndPreview);
+        bookingAmPm.addEventListener("change", syncHiddenAndPreview);
+
+        bookingForm.addEventListener("submit", function (event) {
+            const selectedDate = syncHiddenAndPreview();
+            if (!selectedDate) {
+                event.preventDefault();
+                return;
+            }
+
+            const minDate = parseIsoLocal(minDateTime ? minDateTime.value : "");
+            if (minDate && selectedDate < minDate) {
+                event.preventDefault();
+                preview.textContent = "Giờ đến phải lớn hơn thời điểm hiện tại ít nhất 1 giờ.";
+            }
+        });
+    })();
+</script>
 </body>
 </html>

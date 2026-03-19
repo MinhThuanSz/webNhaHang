@@ -18,6 +18,9 @@ public class DiningTable {
     @Column(nullable = false)
     private String name;
 
+    @Column(unique = true, length = 50)
+    private String tableNumber;
+
     private String tableType;
 
     private String chairType;
@@ -35,8 +38,6 @@ public class DiningTable {
 
     private String location;
 
-    private Integer quantity = 1;
-
     private boolean active = true;
 
     public DiningTable() {
@@ -44,12 +45,12 @@ public class DiningTable {
 
     public DiningTable(String name, String tableType, String chairType, Integer capacity, String description, String location, boolean active) {
         this.name = name;
+        this.tableNumber = name;
         this.tableType = tableType;
         this.chairType = chairType;
         this.capacity = capacity;
         this.description = description;
         this.location = location;
-        this.quantity = 1;
         this.active = active;
     }
 
@@ -63,6 +64,7 @@ public class DiningTable {
                       String areaPosition,
                       boolean active) {
         this.name = name;
+        this.tableNumber = name;
         this.tableType = tableType;
         this.chairType = chairType;
         this.capacity = capacity;
@@ -70,7 +72,6 @@ public class DiningTable {
         this.floor = floor;
         this.roomType = roomType;
         this.areaPosition = areaPosition;
-        this.quantity = 1;
         this.active = active;
     }
 
@@ -98,6 +99,10 @@ public class DiningTable {
 
     public String getName() {
         return name;
+    }
+
+    public String getTableNumber() {
+        return tableNumber;
     }
 
     public String getTableType() {
@@ -133,10 +138,6 @@ public class DiningTable {
         return display == null || display.isBlank() ? location : display;
     }
 
-    public Integer getQuantity() {
-        return quantity;
-    }
-
     public boolean isActive() {
         return active;
     }
@@ -147,6 +148,10 @@ public class DiningTable {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public void setTableNumber(String tableNumber) {
+        this.tableNumber = tableNumber;
     }
 
     public void setTableType(String tableType) {
@@ -179,10 +184,6 @@ public class DiningTable {
 
     public void setLocation(String location) {
         this.location = location;
-    }
-
-    public void setQuantity(Integer quantity) {
-        this.quantity = quantity;
     }
 
     public void setActive(boolean active) {

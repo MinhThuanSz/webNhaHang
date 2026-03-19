@@ -31,21 +31,25 @@
                 <table class="admin-table">
                     <thead>
                     <tr>
-                        <th>Ban</th>
+                        <th>So ban</th>
+                        <th>Tang</th>
+                        <th>Loai phong</th>
                         <th>Mon an</th>
                         <th>So luong</th>
-                        <th>Ghi chu cua khach</th>
+                        <th>Ghi chu</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="order : ${kitchenOrders}">
-                        <td th:text="${order.tableName}">Ban Lotus 01</td>
-                        <td th:text="${order.menuItemName}">Vit quay Bac Kinh</td>
+                        <td th:text="${order.tableNumber}">T1-01</td>
+                        <td th:text="${order.floor}">Tang 1</td>
+                        <td th:text="${order.roomType}">VIP</td>
+                        <td th:text="${order.itemName}">Vit quay Bac Kinh</td>
                         <td th:text="${order.quantity}">2</td>
-                        <td th:text="${order.customerNotes != null and !#strings.isEmpty(order.customerNotes) ? order.customerNotes : '-'}">Khong hanh</td>
+                        <td th:text="${order.note != null and !#strings.isEmpty(order.note) ? order.note : '-'}">Khong hanh</td>
                     </tr>
                     <tr th:if="${#lists.isEmpty(kitchenOrders)}">
-                        <td colspan="4" class="empty-cell">Chua co mon nao can xu ly.</td>
+                        <td colspan="6" class="empty-cell">Chua co mon nao can xu ly.</td>
                     </tr>
                     </tbody>
                 </table>

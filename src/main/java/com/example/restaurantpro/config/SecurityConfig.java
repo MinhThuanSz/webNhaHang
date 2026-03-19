@@ -36,6 +36,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/users/**").hasRole("ADMIN")
                         .requestMatchers("/admin/bookings/**").hasAnyRole("ADMIN", "TABLE_MANAGER")
                         .requestMatchers("/admin/tables/**").hasAnyRole("ADMIN", "TABLE_MANAGER")
+                        .requestMatchers("/api/admin/tables/**").hasAnyRole("ADMIN", "TABLE_MANAGER")
                         .requestMatchers("/admin/kitchen-orders/**").hasAnyRole("ADMIN", "MENU_MANAGER")
                         .requestMatchers("/admin/menu/**").hasAnyRole("ADMIN", "MENU_MANAGER")
                         .requestMatchers("/admin/**").hasAnyRole("ADMIN", "TABLE_MANAGER", "MENU_MANAGER")

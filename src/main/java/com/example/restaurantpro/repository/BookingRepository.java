@@ -78,6 +78,17 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                    @Param("atTime") LocalDateTime atTime);
 
     @Query("""
+        select case when count(b) > 0 then true else false end
+        from Booking b
+        where b.diningTable.id = :tableId
+          and b.status in :activeStatuses
+          and b.endTime > :now
+    """)
+    boolean existsActiveBookingByTableId(@Param("tableId") Long tableId,
+                                         @Param("activeStatuses") List<BookingStatus> activeStatuses,
+                                         @Param("now") LocalDateTime now);
+
+    @Query("""
         select coalesce(sum(b.totalAmount), 0)
         from Booking b
         where b.paymentStatus = :paidStatus
@@ -135,7 +146,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     @Query("""
       select new com.example.restaurantpro.dto.KitchenOrderDto(
-        dt.name,
+        coalesce(dt.tableNumber, dt.name),
+        dt.floor,
+        dt.roomType,
         mi.name,
         bi.quantity,
         b.notes
@@ -147,7 +160,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
       where b.status <> com.example.restaurantpro.model.BookingStatus.CANCELLED
         and b.status <> com.example.restaurantpro.model.BookingStatus.NO_SHOW
         and b.paymentStatus <> com.example.restaurantpro.model.PaymentStatus.PAID
-      order by b.bookingDateTime asc, dt.name asc, mi.name asc
+      order by b.bookingDateTime asc, dt.floor asc, dt.tableNumber asc, mi.name asc
     """)
     List<KitchenOrderDto> findKitchenOrdersForActiveBookings();
 }

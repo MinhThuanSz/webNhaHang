@@ -90,9 +90,8 @@ public class BookingService {
             throw new IllegalArgumentException("Ban da chon ban khong dung suc chua voi so khach.");
         }
 
-        int quantity = normalizeQuantity(table.getQuantity());
         long countConflict = bookingRepository.countConflictingBookings(tableId, bookingDateTime, bookingEndTime);
-        if (countConflict >= quantity) {
+        if (countConflict >= 1) {
             throw new IllegalStateException("Het ban trong loai nay trong khung gio ban chon.");
         }
 
@@ -279,10 +278,6 @@ public class BookingService {
                 .sorted((a, b) -> a.getBookingDateTime().compareTo(b.getBookingDateTime()))
                 .limit(limit)
                 .toList();
-    }
-
-    private int normalizeQuantity(Integer quantity) {
-        return quantity != null && quantity > 0 ? quantity : 1;
     }
 
     private void ensureNotFinalized(Booking booking) {
