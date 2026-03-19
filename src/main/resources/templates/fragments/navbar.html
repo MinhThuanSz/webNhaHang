@@ -21,9 +21,6 @@
           <a href="/#contact">Liên hệ</a>
           <a th:href="@{/booking/start}" sec:authorize="hasAnyRole('CUSTOMER','ADMIN')">Đặt bàn</a>
           <a th:href="@{/booking/my}" sec:authorize="hasAnyRole('CUSTOMER','ADMIN')">Đặt chỗ của tôi</a>
-          <a th:href="@{/admin/dashboard}" sec:authorize="hasAnyRole('ADMIN','TABLE_MANAGER','MENU_MANAGER')">Quản lý</a>
-          <a th:href="@{/admin/bookings}" sec:authorize="hasAnyRole('ADMIN','TABLE_MANAGER')">Quản lý đặt bàn</a>
-          <a th:href="@{/admin/kitchen-orders}" sec:authorize="hasAnyRole('ADMIN','MENU_MANAGER')">Theo dõi order</a>
         </div>
 
         <div class="nav-actions">
