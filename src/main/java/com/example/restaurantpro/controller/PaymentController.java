@@ -1,10 +1,8 @@
 package com.example.restaurantpro.controller;
 
-import com.example.restaurantpro.dto.VnPayCallbackResult;
-import com.example.restaurantpro.model.Booking;
-import com.example.restaurantpro.service.BookingService;
-import com.example.restaurantpro.service.VnPayService;
-import jakarta.servlet.http.HttpServletRequest;
+import java.util.LinkedHashMap;
+import java.util.Map;
+
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
@@ -14,9 +12,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import com.example.restaurantpro.dto.VnPayCallbackResult;
+import com.example.restaurantpro.model.Booking;
+import com.example.restaurantpro.service.BookingService;
+import com.example.restaurantpro.service.VnPayService;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 @Controller
 public class PaymentController {
@@ -68,7 +69,7 @@ public class PaymentController {
         }
         boolean isAdmin = authentication.getAuthorities().stream()
                 .anyMatch(authority -> "ROLE_ADMIN".equals(authority.getAuthority()));
-        boolean isOwner = booking.getCustomer() != null && booking.getCustomer().getPhone().equals(authentication.getName());
+        boolean isOwner = booking.getCustomer() != null && booking.getCustomer().matchesLoginId(authentication.getName());
         if (!isOwner && !isAdmin) {
             throw new AccessDeniedException("Ban khong duoc phep thanh toan booking nay.");
         }

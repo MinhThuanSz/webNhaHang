@@ -1,21 +1,75 @@
 package com.example.restaurantpro.config;
 
+import java.io.IOException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.mail.MailException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.stereotype.Component;
+
+import com.example.restaurantpro.service.OtpService;
+
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
-import org.springframework.stereotype.Component;
-
-import java.io.IOException;
+import jakarta.servlet.http.HttpSession;
 
 @Component
 public class CustomAuthenticationSuccessHandler implements AuthenticationSuccessHandler {
+
+    private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationSuccessHandler.class);
+
+    private static final String OTP_PENDING_EMAIL = "OTP_PENDING_EMAIL";
+    private static final String OTP_PENDING_NAME = "OTP_PENDING_NAME";
+    private static final String GOOGLE_OTP_ERROR_DETAIL = "GOOGLE_OTP_ERROR_DETAIL";
+
+    private final OtpService otpService;
+
+    public CustomAuthenticationSuccessHandler(OtpService otpService) {
+        this.otpService = otpService;
+    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException, ServletException {
+        if (authentication.getPrincipal() instanceof OAuth2User oauth2User) {
+            String email = oauth2User.getAttribute("email");
+            String fullName = oauth2User.getAttribute("name");
+            if (email != null && !email.isBlank()) {
+                try {
+                    otpService.generateAndSendOtp(email);
+                    HttpSession session = request.getSession(true);
+                    session.setAttribute(OTP_PENDING_EMAIL, email);
+                    session.setAttribute(OTP_PENDING_NAME, fullName);
+
+                    logoutKeepSession(request, response, authentication);
+                    response.sendRedirect("/otp/verify");
+                } catch (MailException ex) {
+                    log.error("Google login succeeded but OTP email sending failed for {}", email, ex);
+                    HttpSession session = request.getSession(true);
+                    session.setAttribute(GOOGLE_OTP_ERROR_DETAIL, rootCauseMessage(ex));
+                    logoutKeepSession(request, response, authentication);
+                    response.sendRedirect("/login?googleOtpError=true");
+                } catch (RuntimeException ex) {
+                    log.error("Google login flow failed unexpectedly for {}", email, ex);
+                    HttpSession session = request.getSession(true);
+                    session.setAttribute(GOOGLE_OTP_ERROR_DETAIL, rootCauseMessage(ex));
+                    logoutKeepSession(request, response, authentication);
+                    response.sendRedirect("/login?googleOtpError=true");
+                }
+                return;
+            }
+
+            logoutKeepSession(request, response, authentication);
+            response.sendRedirect("/login?googleEmailMissing=true");
+            return;
+        }
+
         boolean adminSide = authentication.getAuthorities().stream()
                 .anyMatch(authority ->
                         authority.getAuthority().equals("ROLE_ADMIN")
@@ -28,5 +82,25 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         }
 
         response.sendRedirect("/booking/start");
+    }
+
+    private String rootCauseMessage(Throwable throwable) {
+        Throwable current = throwable;
+        while (current.getCause() != null && current.getCause() != current) {
+            current = current.getCause();
+        }
+        String message = current.getMessage();
+        if (message == null || message.isBlank()) {
+            return current.getClass().getSimpleName();
+        }
+        return message;
+    }
+
+    private void logoutKeepSession(HttpServletRequest request,
+                                   HttpServletResponse response,
+                                   Authentication authentication) {
+        SecurityContextLogoutHandler logoutHandler = new SecurityContextLogoutHandler();
+        logoutHandler.setInvalidateHttpSession(false);
+        logoutHandler.logout(request, response, authentication);
     }
 }

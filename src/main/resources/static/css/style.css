@@ -2305,6 +2305,37 @@ img {
   font-size: 1rem;
 }
 
+.btn-google {
+  margin-top: 2px;
+  min-height: 54px;
+  border-radius: 999px;
+  border: 1px solid rgba(31, 26, 23, 0.12);
+  background: #fff;
+  color: #1f1a17;
+  font-weight: 700;
+}
+
+.btn-google:hover {
+  background: #fbf8f2;
+}
+
+.google-mark {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: inline-grid;
+  place-items: center;
+  border: 1px solid rgba(31, 26, 23, 0.14);
+  font-weight: 800;
+  color: #b88646;
+}
+
+.otp-resend-wrap {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
 .helper-text {
   margin: 2px 0 0;
   text-align: center;

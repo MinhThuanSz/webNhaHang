@@ -1,5 +1,10 @@
 package com.example.restaurantpro.model;
 
+import java.time.LocalDateTime;
+import java.util.LinkedHashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -13,11 +18,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Table;
 
-import java.time.LocalDateTime;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 @Entity
 @Table(name = "app_users")
 public class AppUser {
@@ -29,10 +29,17 @@ public class AppUser {
     @Column(nullable = false)
     private String fullName;
 
-    @Column(nullable = false, unique = true)
+    @Column(unique = true)
     private String phone;
 
-    @Column(nullable = false)
+    @Column(unique = true)
+    private String email;
+
+    @Column(name = "google_id", unique = true)
+    private String googleId;
+
+    private String provider;
+
     private String password;
 
     private boolean enabled = true;
@@ -81,6 +88,18 @@ public class AppUser {
         return password;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public String getGoogleId() {
+        return googleId;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
     public boolean isEnabled() {
         return enabled;
     }
@@ -109,6 +128,18 @@ public class AppUser {
         this.password = password;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setGoogleId(String googleId) {
+        this.googleId = googleId;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
@@ -119,5 +150,12 @@ public class AppUser {
 
     public void setRoles(Set<RoleName> roles) {
         this.roles = roles;
+    }
+
+    public boolean matchesLoginId(String loginId) {
+        if (loginId == null || loginId.isBlank()) {
+            return false;
+        }
+        return loginId.equals(phone) || loginId.equalsIgnoreCase(email);
     }
 }

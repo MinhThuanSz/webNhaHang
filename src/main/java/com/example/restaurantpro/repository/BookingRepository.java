@@ -19,6 +19,8 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByCustomer_PhoneOrderByBookingDateTimeDesc(String phone);
 
+    List<Booking> findByCustomer_EmailOrderByBookingDateTimeDesc(String email);
+
     List<Booking> findAllByOrderByBookingDateTimeDesc();
 
     List<Booking> findByBookingDateTimeBetweenOrderByBookingDateTimeAsc(LocalDateTime start, LocalDateTime end);

@@ -75,10 +75,14 @@ public class VnPayService {
             throw new IllegalStateException("Booking dang o trang thai hoan tien, khong the tao giao dich moi.");
         }
 
-        String txnRef = generateTxnRef(booking.getId());
-        PaymentTransaction paymentTransaction = new PaymentTransaction(booking, txnRef, booking.getTotalAmount());
+        String txnRef = String.valueOf(booking.getId());
+        PaymentTransaction paymentTransaction = paymentTransactionRepository.findByTxnRef(txnRef)
+                .orElseGet(() -> new PaymentTransaction(booking, txnRef, booking.getTotalAmount()));
+        paymentTransaction.setBooking(booking);
+        paymentTransaction.setAmount(booking.getTotalAmount());
         paymentTransaction.setProvider("VNPAY");
         paymentTransaction.setType(PaymentTransactionType.PAYMENT);
+        paymentTransaction.setStatus(PaymentStatus.PENDING);
         paymentTransaction.setMessage("Khoi tao giao dich VNPAY");
         paymentTransactionRepository.save(paymentTransaction);
         bookingService.markPaymentPending(booking, txnRef);
@@ -383,12 +387,6 @@ public class VnPayService {
                 .replaceAll("\\s+", " ")
                 .trim();
         return normalized.length() > 255 ? normalized.substring(0, 255) : normalized;
-    }
-
-    private String generateTxnRef(Long bookingId) {
-        String timestamp = LocalDateTime.now(VN_ZONE).format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
-        int random = ThreadLocalRandom.current().nextInt(1000, 9999);
-        return "BK" + bookingId + timestamp + random;
     }
 
     private String generateRefundTxnRef(Long bookingId) {

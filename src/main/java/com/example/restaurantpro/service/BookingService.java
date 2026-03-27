@@ -68,7 +68,7 @@ public class BookingService {
         return bookingRepository.findKitchenOrdersForActiveBookings();
     }
 
-    public Booking createBooking(String customerPhone,
+    public Booking createBooking(String customerLoginId,
                                  Long tableId,
                                  Integer guestCount,
                                  LocalDateTime bookingDateTime,
@@ -83,7 +83,7 @@ public class BookingService {
         int normalizedDuration = (durationHours == null || durationHours < 1) ? 2 : durationHours;
         LocalDateTime bookingEndTime = bookingDateTime.plusHours(normalizedDuration).plusMinutes(30);
 
-        AppUser customer = appUserService.findByPhone(customerPhone)
+        AppUser customer = appUserService.findByLoginId(customerLoginId)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay khach hang."));
         DiningTable table = tableService.getTableById(tableId);
         if (table.getCapacity() == null || !table.getCapacity().equals(guestCount)) {
@@ -126,8 +126,11 @@ public class BookingService {
         return bookingRepository.save(booking);
     }
 
-    public List<Booking> getBookingsForUser(String phone) {
-        return bookingRepository.findByCustomer_PhoneOrderByBookingDateTimeDesc(phone);
+    public List<Booking> getBookingsForUser(String loginId) {
+        if (loginId != null && loginId.contains("@")) {
+            return bookingRepository.findByCustomer_EmailOrderByBookingDateTimeDesc(loginId);
+        }
+        return bookingRepository.findByCustomer_PhoneOrderByBookingDateTimeDesc(loginId);
     }
 
     public List<Booking> getAllBookings() {
@@ -169,11 +172,10 @@ public class BookingService {
         bookingRepository.save(booking);
     }
 
-    public CancelResult cancelByCustomer(Long id, String customerPhone) {
+    public CancelResult cancelByCustomer(Long id, String customerLoginId) {
         Booking booking = findById(id);
 
-        if (booking.getCustomer() == null || booking.getCustomer().getPhone() == null
-                || !booking.getCustomer().getPhone().equals(customerPhone)) {
+        if (booking.getCustomer() == null || !booking.getCustomer().matchesLoginId(customerLoginId)) {
             throw new IllegalArgumentException("Ban khong co quyen huy don dat ban nay.");
         }
 

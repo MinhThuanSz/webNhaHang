@@ -13,6 +13,40 @@ spring:
         format_sql: true
   thymeleaf:
     cache: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID:532455676051-e1q2dig1o7ngent6mtita020fqkgphpf.apps.googleusercontent.com}
+            client-secret: ${GOOGLE_CLIENT_SECRET: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}
+            scope:
+              - openid
+              - profile
+              - email
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${MAIL_USERNAME:lollong2112@gmail.com}
+    password: ${MAIL_APP_PASSWORD:hcnhsnpovamvwlfq}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+app:
+  otp:
+    expiry-minutes: ${OTP_EXPIRY_MINUTES:5}
+  mail:
+    from-address: ${MAIL_FROM_ADDRESS:${spring.mail.username}}
+    from-name: ${MAIL_FROM_NAME:Restaurant Pro}
 
 server:
   port: 8089

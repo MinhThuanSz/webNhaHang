@@ -26,7 +26,13 @@
 
                 <div class="alert success" th:if="${successMessage}" th:text="${successMessage}">Thông báo thành công</div>
                 <div class="alert error" th:if="${param.error}">Sai số điện thoại hoặc mật khẩu.</div>
+                <div class="alert error" th:if="${param.googleOtpError}">Đăng nhập Google thành công nhưng gửi OTP thất bại. Vui lòng kiểm tra cấu hình SMTP Gmail App Password.</div>
+                <div class="alert error" th:if="${googleOtpErrorDetail}">
+                    Chi tiết lỗi: <span th:text="${googleOtpErrorDetail}">SMTP error</span>
+                </div>
+                <div class="alert error" th:if="${param.googleEmailMissing}">Tài khoản Google không trả về email. Vui lòng thử lại bằng tài khoản khác.</div>
                 <div class="alert info" th:if="${param.logout}">Bạn đã đăng xuất khỏi hệ thống.</div>
+                <div class="alert info" th:if="${infoMessage}" th:text="${infoMessage}">Thông báo</div>
 
                 <label>Số điện thoại
                     <input type="text" name="username" placeholder="Số điện thoại" required/>
@@ -37,6 +43,10 @@
                 </label>
 
                 <button type="submit" class="btn btn-primary full-width">Đăng nhập</button>
+                <a class="btn btn-google full-width" th:href="@{/oauth2/authorization/google}">
+                    <span class="google-mark">G</span>
+                    <span>Đăng nhập với Google</span>
+                </a>
                 <p class="helper-text">Chưa có tài khoản? <a th:href="@{/register}">Đăng ký ngay</a></p>
             </form>
         </div>

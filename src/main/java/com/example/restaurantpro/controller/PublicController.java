@@ -15,10 +15,13 @@ import com.example.restaurantpro.service.AppUserService;
 import com.example.restaurantpro.service.MenuService;
 import com.example.restaurantpro.service.TableService;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 
 @Controller
 public class PublicController {
+
+    private static final String GOOGLE_OTP_ERROR_DETAIL = "GOOGLE_OTP_ERROR_DETAIL";
 
     private final TableService tableService;
     private final MenuService menuService;
@@ -38,7 +41,12 @@ public class PublicController {
     }
 
     @GetMapping("/login")
-    public String login(Authentication authentication) {
+    public String login(Authentication authentication, Model model, HttpSession session) {
+        Object errorDetail = session.getAttribute(GOOGLE_OTP_ERROR_DETAIL);
+        if (errorDetail != null) {
+            model.addAttribute("googleOtpErrorDetail", errorDetail.toString());
+            session.removeAttribute(GOOGLE_OTP_ERROR_DETAIL);
+        }
         if (authentication != null && authentication.isAuthenticated() && !(authentication instanceof AnonymousAuthenticationToken)) {
             return "redirect:/";
         }
