@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8"/>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Quáº£n lÃ½ bÃ n | RiviÃ¨re Restaurant</title>
+    <title>Quản lý bàn | Rivière Restaurant</title>
     <link rel="stylesheet" href="../../static/css/style.css" th:href="@{/css/style.css}"/>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body>
@@ -14,56 +13,56 @@
 <section class="page-header admin">
     <div class="container">
         <span class="section-tag">Table manager</span>
-        <h1>Quáº£n lÃ½ bÃ n Äƒn</h1>
-        <p>ThÃªm má»›i, chá»‰nh sá»­a mÃ´ táº£ bÃ n, kiá»ƒu bÃ n, gháº¿ vÃ  sá»©c chá»©a.</p>
+        <h1>Quản lý bàn ăn</h1>
+        <p>Thêm mới, chỉnh sửa mô tả bàn, kiểu bàn, ghế và sức chứa.</p>
     </div>
 </section>
 
 <section class="section">
     <div class="container admin-layout">
         <div class="table-card">
-            <h3 th:text="${tableForm.id != null ? 'Chá»‰nh sá»­a bÃ n Äƒn' : 'ThÃªm bÃ n má»›i'}">ThÃªm bÃ n má»›i</h3>
+            <h3 th:text="${tableForm.id != null ? 'Chỉnh sửa bàn ăn' : 'Thêm bàn mới'}">Thêm bàn mới</h3>
             <div class="alert success" th:if="${successMessage}" th:text="${successMessage}"></div>
             <div class="alert error" th:if="${errorMessage}" th:text="${errorMessage}"></div>
 
             <form class="stack-form" th:action="@{/admin/tables/save}" th:object="${tableForm}" method="post">
                 <input type="hidden" th:field="*{id}"/>
-                <label>TÃªn bÃ n
-                    <input type="text" th:field="*{name}" placeholder="BÃ n Lotus 01" required/>
+                <label>Tên bàn
+                    <input type="text" th:field="*{name}" placeholder="Bàn Lotus 01" required/>
                 </label>
-                <label>Sá»‘ bÃ n / MÃ£ bÃ n
-                    <input type="text" th:field="*{tableNumber}" placeholder="T1-01 hoáº·c VIP-02" required/>
+                <label>Số bàn / Mã bàn
+                    <input type="text" th:field="*{tableNumber}" placeholder="T1-01 hoặc VIP-02" required/>
                 </label>
-                <label>Kiá»ƒu bÃ n
-                    <input type="text" th:field="*{tableType}" placeholder="BÃ n trÃ²n" required/>
+                <label>Kiểu bàn
+                    <input type="text" th:field="*{tableType}" placeholder="Bàn tròn" required/>
                 </label>
-                <label>Loáº¡i gháº¿
-                    <input type="text" th:field="*{chairType}" placeholder="Gháº¿ tá»±a" required/>
+                <label>Loại ghế
+                    <input type="text" th:field="*{chairType}" placeholder="Ghế tựa" required/>
                 </label>
-                <label>Sá»©c chá»©a
+                <label>Sức chứa
                     <input type="number" th:field="*{capacity}" min="1" max="50" required/>
                 </label>
-                <label>Táº§ng
-                    <input type="text" th:field="*{floor}" placeholder="Táº§ng 1" required/>
+                <label>Tầng
+                    <input type="text" th:field="*{floor}" placeholder="Tầng 1" required/>
                 </label>
-                <label>Loáº¡i phÃ²ng
-                    <input type="text" th:field="*{roomType}" placeholder="PhÃ²ng VIP" required/>
+                <label>Loại phòng
+                    <input type="text" th:field="*{roomType}" placeholder="Phòng VIP" required/>
                 </label>
-                <label>Vá»‹ trÃ­
-                    <input type="text" th:field="*{areaPosition}" placeholder="Gáº§n cá»­a sá»• / Trung tÃ¢m" required/>
+                <label>Vị trí
+                    <input type="text" th:field="*{areaPosition}" placeholder="Gần cửa sổ / Trung tâm" required/>
                 </label>
-                <label>MÃ´ táº£
-                    <textarea rows="4" th:field="*{description}" placeholder="MÃ´ táº£ tráº£i nghiá»‡m, vá»‹ trÃ­, phong cÃ¡ch..."></textarea>
+                <label>Mô tả
+                    <textarea rows="4" th:field="*{description}" placeholder="Mô tả trải nghiệm, vị trí, phong cách..."></textarea>
                 </label>
 
                 <label class="checkbox-row">
                     <input type="checkbox" th:field="*{active}"/>
-                    <span>Äang hoáº¡t Ä‘á»™ng</span>
+                    <span>Đang hoạt động</span>
                 </label>
 
                 <div class="action-row">
-                    <button type="submit" class="btn btn-primary">LÆ°u bÃ n Äƒn</button>
-                    <a class="btn btn-ghost" th:href="@{/admin/tables}">LÃ m má»›i form</a>
+                    <button type="submit" class="btn btn-primary">Lưu bàn ăn</button>
+                    <a class="btn btn-ghost" th:href="@{/admin/tables}">Làm mới form</a>
                 </div>
             </form>
         </div>
@@ -71,20 +70,20 @@
         <div class="table-card">
             <div class="table-card-head">
                 <div>
-                    <span class="section-tag">Theo dÃµi theo giá»</span>
-                    <h3>GiÃ¡m sÃ¡t tráº¡ng thÃ¡i bÃ n theo thá»i gian</h3>
+                    <span class="section-tag">Theo dõi theo giờ</span>
+                    <h3>Giám sát trạng thái bàn theo thời gian</h3>
                 </div>
             </div>
 
             <div class="filter-bar" id="monitorForm">
                 <input type="hidden" id="initialMonitorDateTime" th:value="${#temporals.format(monitorDateTime, 'yyyy-MM-dd''T''HH:mm')}"/>
-                <label>NgÃ y
+                <label>Ngày
                     <input type="date" id="monitorDate"/>
                 </label>
-                <label>Giá»
+                <label>Giờ
                     <select id="monitorHour"></select>
                 </label>
-                <label>PhÃºt
+                <label>Phút
                     <select id="monitorMinute"></select>
                 </label>
                 <label>AM/PM
@@ -93,42 +92,42 @@
                         <option value="PM">PM</option>
                     </select>
                 </label>
-                <button class="btn btn-primary" type="button" id="applyMonitorBtn">Cáº­p nháº­t tráº¡ng thÃ¡i</button>
-                <button class="btn btn-ghost" type="button" id="backToNowBtn">Quay láº¡i giá» hiá»‡n táº¡i</button>
+                <button class="btn btn-primary" type="button" id="applyMonitorBtn">Cập nhật trạng thái</button>
+                <button class="btn btn-ghost" type="button" id="backToNowBtn">Quay lại giờ hiện tại</button>
             </div>
-            <p class="muted-mini">Theo dÃµi khÃ´ng cáº§n táº£i láº¡i trang. Thá»i Ä‘iá»ƒm Ä‘ang xem: <strong id="checkTimeLabel">-</strong></p>
+            <p class="muted-mini">Theo dõi không cần tải lại trang. Thời điểm đang xem: <strong id="checkTimeLabel">-</strong></p>
 
             <div class="booking-meta">
-                <div><strong>Tá»•ng bÃ n hoáº¡t Ä‘á»™ng:</strong> <span id="totalTablesCount" th:text="${totalActiveTables}">0</span></div>
-                <div><strong>Trá»‘ng:</strong> <span id="freeCount" th:text="${totalAvailableTables}">0</span></div>
-                <div><strong>Äang sá»­ dá»¥ng:</strong> <span id="inUseCount" th:text="${totalActiveTables - totalAvailableTables}">0</span></div>
-                <div><strong>Sáº¯p cÃ³ khÃ¡ch:</strong> <span id="soonCount">0</span></div>
+                <div><strong>Tổng bàn hoạt động:</strong> <span id="totalTablesCount" th:text="${totalActiveTables}">0</span></div>
+                <div><strong>Trống:</strong> <span id="freeCount" th:text="${totalAvailableTables}">0</span></div>
+                <div><strong>Đang sử dụng:</strong> <span id="inUseCount" th:text="${totalActiveTables - totalAvailableTables}">0</span></div>
+                <div><strong>Sắp có khách:</strong> <span id="soonCount">0</span></div>
             </div>
 
             <div class="table-responsive">
                 <table class="admin-table">
                     <thead>
                     <tr>
-                        <th>NhÃ³m tráº¡ng thÃ¡i</th>
-                        <th>Sá»‘ bÃ n</th>
-                        <th>Ghi chÃº</th>
+                        <th>Nhóm trạng thái</th>
+                        <th>Số bàn</th>
+                        <th>Ghi chú</th>
                     </tr>
                     </thead>
                     <tbody id="statusSummaryBody">
                     <tr>
-                        <td>Trá»‘ng</td>
+                        <td>Trống</td>
                         <td th:text="${totalAvailableTables}">0</td>
-                        <td>Sáºµn sÃ ng nháº­n khÃ¡ch ngay</td>
+                        <td>Sẵn sàng nhận khách ngay</td>
                     </tr>
                     <tr>
-                        <td>Äang sá»­ dá»¥ng</td>
+                        <td>Đang sử dụng</td>
                         <td th:text="${totalActiveTables - totalAvailableTables}">0</td>
-                        <td>Äang cÃ³ khÃ¡ch táº¡i thá»i Ä‘iá»ƒm chá»n</td>
+                        <td>Đang có khách tại thời điểm chọn</td>
                     </tr>
                     <tr>
-                        <td>Sáº¯p cÃ³ khÃ¡ch</td>
+                        <td>Sắp có khách</td>
                         <td>0</td>
-                        <td>CÃ³ booking trong 2 giá» tá»›i</td>
+                        <td>Có booking trong 2 giờ tới</td>
                     </tr>
                     </tbody>
                 </table>
@@ -138,37 +137,37 @@
         <div class="table-card">
             <div class="table-card-head">
                 <div>
-                    <span class="section-tag">Danh sÃ¡ch bÃ n</span>
-                    <h3>Táº¥t cáº£ bÃ n trong há»‡ thá»‘ng</h3>
+                    <span class="section-tag">Danh sách bàn</span>
+                    <h3>Tất cả bàn trong hệ thống</h3>
                 </div>
             </div>
             <div class="table-responsive">
                 <table class="admin-table">
                     <thead>
                     <tr>
-                        <th>Sá»‘ bÃ n</th>
-                        <th>TÃªn bÃ n</th>
-                        <th>MÃ´ táº£ ngáº¯n</th>
-                        <th>Khu vá»±c</th>
-                        <th>Tráº¡ng thÃ¡i hiá»‡n táº¡i</th>
-                        <th>Tráº¡ng thÃ¡i</th>
-                        <th>Thao tÃ¡c</th>
+                        <th>Số bàn</th>
+                        <th>Tên bàn</th>
+                        <th>Mô tả ngắn</th>
+                        <th>Khu vực</th>
+                        <th>Trạng thái hiện tại</th>
+                        <th>Trạng thái</th>
+                        <th>Thao tác</th>
                     </tr>
                     </thead>
                     <tbody>
                     <tr th:each="table : ${tables}">
                         <td th:text="${table.tableNumber}">T1-01</td>
-                        <td th:text="${table.name}">BÃ n Lotus 01</td>
-                        <td th:text="${table.tableType + ' - Sá»©c chá»©a ' + table.capacity + ' ngÆ°á»i'}">BÃ n trÃ²n - Sá»©c chá»©a 4 ngÆ°á»i</td>
-                        <td th:text="${table.locationDisplay}">Táº§ng 1 / VIP / Gáº§n cá»­a sá»•</td>
-                        <td th:text="${table.availableNow ? 'Äang trá»‘ng' : 'Äang cÃ³ khÃ¡ch'}">Äang trá»‘ng</td>
-                        <td th:text="${table.active ? 'Äang hoáº¡t Ä‘á»™ng' : 'NgÆ°ng hoáº¡t Ä‘á»™ng'}">Äang hoáº¡t Ä‘á»™ng</td>
+                        <td th:text="${table.name}">Bàn Lotus 01</td>
+                        <td th:text="${table.tableType + ' - Sức chứa ' + table.capacity + ' người'}">Bàn tròn - Sức chứa 4 người</td>
+                        <td th:text="${table.locationDisplay}">Tầng 1 / VIP / Gần cửa sổ</td>
+                        <td th:text="${table.availableNow ? 'Đang trống' : 'Đang có khách'}">Đang trống</td>
+                        <td th:text="${table.active ? 'Đang hoạt động' : 'Ngưng hoạt động'}">Đang hoạt động</td>
                         <td>
                             <div class="inline-actions">
-                                <a class="btn btn-small btn-ghost" th:href="@{/admin/tables(editId=${table.id})}">Sá»­a</a>
+                                <a class="btn btn-small btn-ghost" th:href="@{/admin/tables(editId=${table.id})}">Sửa</a>
                                 <form th:action="@{/admin/tables/delete}" method="post">
                                     <input type="hidden" name="id" th:value="${table.id}"/>
-                                    <button class="btn btn-small btn-danger" type="submit">XÃ³a</button>
+                                    <button class="btn btn-small btn-danger" type="submit">Xóa</button>
                                 </form>
                             </div>
                         </td>
@@ -178,56 +177,75 @@
             </div>
         </div>
 
-                        <div class="table-card">
+        <div class="table-card">
             <div class="table-card-head">
                 <div>
-                    <span class="section-tag">So do mat bang</span>
-                    <h3>Ban do trang thai ban theo thoi gian thuc</h3>
-                    <p class="muted-mini">Chon moc thoi gian o tren de xem so do cap nhat ngay.</p>
+                    <span class="section-tag">Chi tiết theo giờ</span>
+                    <h3>Phân loại Trống / Đang sử dụng / Sắp có khách</h3>
                 </div>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3 mb-4">
-                <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 bg-gray-100 text-gray-700 text-sm">
-                    <span class="w-3 h-3 rounded-full bg-gray-400"></span>
-                    <span>Trong</span>
-                </div>
-                <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 bg-blue-50 text-blue-700 text-sm">
-                    <span class="w-3 h-3 rounded-full bg-blue-500"></span>
-                    <span>Dang su dung</span>
-                </div>
-                <div class="inline-flex items-center gap-2 rounded-full px-3 py-1 bg-yellow-100 text-yellow-900 text-sm">
-                    <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
-                    <span>Sap co khach</span>
-                </div>
+            <h4>Bàn trống</h4>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Số bàn</th>
+                        <th>Tên bàn</th>
+                        <th>Vị trí</th>
+                        <th>Sức chứa</th>
+                        <th>Kiểu bàn</th>
+                        <th>Thời gian trống</th>
+                    </tr>
+                    </thead>
+                    <tbody id="freeTablesBody">
+                    <tr>
+                        <td colspan="6" class="empty-cell">Đang tải dữ liệu...</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
 
-            <div id="floorPlanGrid"
-                 class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
-                <div th:each="table : ${tables}"
-                     th:with="isAvailable=${table.availableNow}">
-                    <div th:classappend="${table.status} == 'RESERVED' ? ' bg-yellow-400 text-yellow-900' : (${isAvailable} ? ' bg-gray-200 text-gray-700' : ' bg-blue-500 text-white')}"
-                         class="relative rounded-2xl px-3 pt-8 pb-6 shadow-lg border border-white/30 overflow-hidden min-h-[170px] transition-all">
-                        <div class="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/10 to-black/5"></div>
-                        <span class="absolute -top-2 left-1/2 -translate-x-1/2 w-14 h-3 rounded-full bg-white/80 shadow-sm"></span>
-                        <span class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-14 h-3 rounded-full bg-white/80 shadow-sm"></span>
-                        <span class="absolute -left-2 top-1/2 -translate-y-1/2 w-3 h-12 rounded-full bg-white/80 shadow-sm"></span>
-                        <span class="absolute -right-2 top-1/2 -translate-y-1/2 w-3 h-12 rounded-full bg-white/80 shadow-sm"></span>
+            <h4>Bàn đang sử dụng</h4>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Số bàn</th>
+                        <th>Tên bàn</th>
+                        <th>Vị trí</th>
+                        <th>Sức chứa</th>
+                        <th>Kiểu bàn</th>
+                        <th>Rảnh lại lúc</th>
+                    </tr>
+                    </thead>
+                    <tbody id="inUseTablesBody">
+                    <tr>
+                        <td colspan="6" class="empty-cell">Đang tải dữ liệu...</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
 
-                        <div class="relative bg-white/90 text-center rounded-xl py-5 px-3 shadow-sm">
-                            <div class="text-lg font-bold tracking-tight" th:text="${table.tableNumber}">T1-01</div>
-                            <div class="text-xs font-medium text-gray-600" th:text="${table.name}">Ban</div>
-                        </div>
-
-                        <div class="absolute top-3 left-3 text-[11px] font-semibold uppercase tracking-wide opacity-90">
-                            <span th:text="${isAvailable} ? 'Trong' : 'Dang su dung'">Trong</span>
-                        </div>
-                        <div class="absolute top-3 right-3">
-                            <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/80 text-gray-800 text-xs font-semibold" th:text="${table.capacity + ' nguoi'}">4 nguoi</span>
-                        </div>
-                        <div class="absolute bottom-3 left-3 text-[11px] opacity-80" th:text="${table.locationDisplay}">Tang 1 / Khu chinh</div>
-                    </div>
-                </div>
+            <h4>Bàn sắp có khách</h4>
+            <div class="table-responsive">
+                <table class="admin-table">
+                    <thead>
+                    <tr>
+                        <th>Số bàn</th>
+                        <th>Tên bàn</th>
+                        <th>Vị trí</th>
+                        <th>Sức chứa</th>
+                        <th>Kiểu bàn</th>
+                        <th>Khách đến lúc</th>
+                    </tr>
+                    </thead>
+                    <tbody id="soonTablesBody">
+                    <tr>
+                        <td colspan="6" class="empty-cell">Đang tải dữ liệu...</td>
+                    </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
@@ -248,25 +266,16 @@
         const inUseCount = document.getElementById("inUseCount");
         const soonCount = document.getElementById("soonCount");
         const statusSummaryBody = document.getElementById("statusSummaryBody");
-        const floorPlanGrid = document.getElementById("floorPlanGrid");
+
+        const freeTablesBody = document.getElementById("freeTablesBody");
+        const inUseTablesBody = document.getElementById("inUseTablesBody");
+        const soonTablesBody = document.getElementById("soonTablesBody");
 
         if (!monitorDate || !monitorHour || !monitorMinute || !monitorAmPm || !applyBtn || !backToNowBtn) {
             return;
         }
 
         let nowMode = true;
-
-        const STATUS_CLASS = {
-            AVAILABLE: "bg-gray-200 text-gray-700",
-            OCCUPIED: "bg-blue-500 text-white",
-            RESERVED: "bg-yellow-400 text-yellow-900"
-        };
-
-        const STATUS_LABEL = {
-            AVAILABLE: "Trong",
-            OCCUPIED: "Dang su dung",
-            RESERVED: "Sap co khach"
-        };
 
         function pad(num) {
             return String(num).padStart(2, "0");
@@ -356,18 +365,6 @@
                 + " " + pad(hour) + ":" + pad(date.getMinutes()) + " " + ampm;
         }
 
-        function formatTimeShort(value) {
-            if (!value) {
-                return "-";
-            }
-            const normalized = value.length === 16 ? value + ":00" : value;
-            const date = new Date(normalized);
-            if (Number.isNaN(date.getTime())) {
-                return "-";
-            }
-            return pad(date.getHours()) + ":" + pad(date.getMinutes());
-        }
-
         function locationText(item) {
             const parts = [];
             if (item.floor) {
@@ -376,78 +373,37 @@
             if (item.roomType) {
                 parts.push(item.roomType);
             }
-            if (item.locationDisplay) {
-                parts.push(item.locationDisplay);
-            }
             return parts.length > 0 ? parts.join(" / ") : "-";
         }
 
-        function mergeTables(data) {
-            const wrap = function (items, status) {
-                return (items || []).map(function (item) {
-                    return Object.assign({}, item, { status: status });
-                });
-            };
-            return []
-                .concat(wrap(data.freeTables, "AVAILABLE"))
-                .concat(wrap(data.inUseTables, "OCCUPIED"))
-                .concat(wrap(data.soonTables, "RESERVED"));
-        }
-
-        function buildSeatHtml() {
-            return ""
-                + '<span class="absolute -top-2 left-1/2 -translate-x-1/2 w-14 h-3 rounded-full bg-white/80 shadow-sm"></span>'
-                + '<span class="absolute -bottom-2 left-1/2 -translate-x-1/2 w-14 h-3 rounded-full bg-white/80 shadow-sm"></span>'
-                + '<span class="absolute -left-2 top-1/2 -translate-y-1/2 w-3 h-12 rounded-full bg-white/80 shadow-sm"></span>'
-                + '<span class="absolute -right-2 top-1/2 -translate-y-1/2 w-3 h-12 rounded-full bg-white/80 shadow-sm"></span>';
-        }
-
-        function buildTile(item) {
-            const statusClass = STATUS_CLASS[item.status] || STATUS_CLASS.AVAILABLE;
-            const statusLabel = STATUS_LABEL[item.status] || STATUS_LABEL.AVAILABLE;
-            const capacity = item.capacity != null ? item.capacity + " nguoi" : "-";
-            const location = locationText(item);
-            const comingTime = item.status === "RESERVED" && item.availableUntil ? formatTimeShort(item.availableUntil) : null;
-
-            const tableNumber = item.tableNumber || item.tableName || item.name || "Ban";
-            const tableName = item.tableName || item.name || item.tableType || "";
-
-            return ""
-                + '<div class="relative rounded-2xl px-3 pt-8 pb-6 shadow-lg border border-white/30 overflow-hidden min-h-[170px] transition-all ' + statusClass + '">'
-                + '  <div class="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/10 to-black/5"></div>'
-                + buildSeatHtml()
-                + '  <div class="relative bg-white/90 text-center rounded-xl py-5 px-3 shadow-sm">'
-                + '    <div class="text-lg font-bold tracking-tight">' + tableNumber + '</div>'
-                + '    <div class="text-xs font-medium text-gray-600">' + tableName + '</div>'
-                + '  </div>'
-                + '  <div class="absolute top-3 left-3 text-[11px] font-semibold uppercase tracking-wide opacity-90">' + statusLabel + '</div>'
-                + '  <div class="absolute top-3 right-3">'
-                + '    <span class="inline-flex items-center gap-1 px-2 py-1 rounded-full bg-white/80 text-gray-800 text-xs font-semibold">' + capacity + '</span>'
-                + '  </div>'
-                + '  <div class="absolute bottom-3 left-3 text-[11px] opacity-80">' + location + '</div>'
-                + (comingTime ? '  <div class="absolute bottom-3 right-3 text-[11px] font-semibold">Den: ' + comingTime + '</div>' : '')
-                + '</div>';
-        }
-
-        function renderFloorPlan(data) {
-            if (!floorPlanGrid) {
-                return;
+        function buildRows(items, timeLabelBuilder) {
+            if (!items || items.length === 0) {
+                return "<tr><td colspan=\"6\" class=\"empty-cell\">Không có dữ liệu.</td></tr>";
             }
 
-            const items = mergeTables(data);
-            if (!items.length) {
-                floorPlanGrid.innerHTML = '<div class="col-span-full text-center text-sm text-slate-500">Khong co du lieu tai thoi diem nay</div>';
-                return;
-            }
+            return items.map(function (item) {
+                const tableNumber = item.tableNumber || "-";
+                const tableName = item.tableName || "-";
+                const capacity = item.capacity != null ? item.capacity + " người" : "-";
+                const tableType = item.tableType || "-";
+                const timeLabel = timeLabelBuilder(item);
 
-            floorPlanGrid.innerHTML = items.map(buildTile).join("");
+                return "<tr>"
+                    + "<td>" + tableNumber + "</td>"
+                    + "<td>" + tableName + "</td>"
+                    + "<td>" + locationText(item) + "</td>"
+                    + "<td>" + capacity + "</td>"
+                    + "<td>" + tableType + "</td>"
+                    + "<td>" + timeLabel + "</td>"
+                    + "</tr>";
+            }).join("");
         }
 
         function updateStatusSummary(data) {
             statusSummaryBody.innerHTML = ""
-                + "<tr><td>Trong</td><td>" + data.freeCount + "</td><td>San sang nhan khach ngay</td></tr>"
-                + "<tr><td>Dang su dung</td><td>" + data.inUseCount + "</td><td>Co khach tai thoi diem dang xem</td></tr>"
-                + "<tr><td>Sap co khach</td><td>" + data.soonCount + "</td><td>Co booking trong 2 gio toi</td></tr>";
+                + "<tr><td>Trống</td><td>" + data.freeCount + "</td><td>Sẵn sàng nhận khách ngay</td></tr>"
+                + "<tr><td>Đang sử dụng</td><td>" + data.inUseCount + "</td><td>Có khách tại thời điểm đang xem</td></tr>"
+                + "<tr><td>Sắp có khách</td><td>" + data.soonCount + "</td><td>Có booking trong 2 giờ tới</td></tr>";
         }
 
         function renderStatus(data) {
@@ -458,7 +414,18 @@
             checkTimeLabel.textContent = formatDateTimeDisplay(data.checkTime);
 
             updateStatusSummary(data);
-            renderFloorPlan(data);
+
+            freeTablesBody.innerHTML = buildRows(data.freeTables, function (item) {
+                return item.availableUntil ? "Rảnh đến " + formatDateTimeDisplay(item.availableUntil) : "Trống tự do";
+            });
+
+            inUseTablesBody.innerHTML = buildRows(data.inUseTables, function (item) {
+                return item.availableUntil ? formatDateTimeDisplay(item.availableUntil) : "-";
+            });
+
+            soonTablesBody.innerHTML = buildRows(data.soonTables, function (item) {
+                return item.availableUntil ? formatDateTimeDisplay(item.availableUntil) : "-";
+            });
         }
 
         function fetchStatus(date) {
@@ -470,7 +437,7 @@
             })
                 .then(function (response) {
                     if (!response.ok) {
-                        throw new Error("Khong lay duoc trang thai ban");
+                        throw new Error("Không lấy được trạng thái bàn");
                     }
                     return response.json();
                 })
@@ -478,7 +445,7 @@
                     renderStatus(data);
                 })
                 .catch(function () {
-                    checkTimeLabel.textContent = "Loi tai du lieu";
+                    checkTimeLabel.textContent = "Lỗi tải dữ liệu";
                 });
         }
 
@@ -527,7 +494,8 @@
             }
         }, 30000);
     })();
-</script><script th:inline="javascript">
+</script>
+<script th:inline="javascript">
     (function () {
         const errorMessage = /*[[${errorMessage}]]*/ null;
         const successMessage = /*[[${successMessage}]]*/ null;
@@ -535,7 +503,7 @@
         if (errorMessage) {
             Swal.fire({
                 icon: "error",
-                title: "KhÃ´ng thá»ƒ xÃ³a bÃ n",
+                title: "Không thể xóa bàn",
                 text: errorMessage,
                 toast: true,
                 position: "top-end",
@@ -563,10 +531,3 @@
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
