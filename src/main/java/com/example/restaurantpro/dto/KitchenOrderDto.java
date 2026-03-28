@@ -2,31 +2,48 @@ package com.example.restaurantpro.dto;
 
 public class KitchenOrderDto {
 
-    private final String tableName;
-    private final String menuItemName;
+    private final String tableNumber;
+    private final String floor;
+    private final String roomType;
+    private final String itemName;
     private final Integer quantity;
-    private final String customerNotes;
+    private final String note;
 
-    public KitchenOrderDto(String tableName, String menuItemName, Integer quantity, String customerNotes) {
-        this.tableName = tableName;
-        this.menuItemName = menuItemName;
+    public KitchenOrderDto(String tableNumber,
+                           String floor,
+                           String roomType,
+                           String itemName,
+                           Integer quantity,
+                           String note) {
+        this.tableNumber = tableNumber;
+        this.floor = floor;
+        this.roomType = roomType;
+        this.itemName = itemName;
         this.quantity = quantity;
-        this.customerNotes = customerNotes;
+        this.note = note;
     }
 
-    public String getTableName() {
-        return tableName;
+    public String getTableNumber() {
+        return tableNumber;
     }
 
-    public String getMenuItemName() {
-        return menuItemName;
+    public String getFloor() {
+        return floor;
+    }
+
+    public String getRoomType() {
+        return roomType;
+    }
+
+    public String getItemName() {
+        return itemName;
     }
 
     public Integer getQuantity() {
         return quantity;
     }
 
-    public String getCustomerNotes() {
-        return customerNotes;
+    public String getNote() {
+        return note;
     }
 }

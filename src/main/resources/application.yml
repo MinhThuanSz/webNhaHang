@@ -13,6 +13,40 @@ spring:
         format_sql: true
   thymeleaf:
     cache: false
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+  mail:
+    host: ${SMTP_HOST:smtp.gmail.com}
+    port: ${SMTP_PORT:587}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_APP_PASSWORD:}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+          ssl:
+            trust: smtp.gmail.com
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+app:
+  otp:
+    expiry-minutes: ${OTP_EXPIRY_MINUTES:5}
+  mail:
+    from-address: ${MAIL_FROM_ADDRESS:${spring.mail.username}}
+    from-name: ${MAIL_FROM_NAME:Restaurant Pro}
 
 server:
   port: 8089
@@ -20,12 +54,12 @@ server:
 
 payment:
   vnpay:
-    enabled: false
-    tmn-code: YOUR_TMN_CODE
-    hash-secret: YOUR_HASH_SECRET
+    enabled: true
+    tmn-code: 
+    hash-secret: 
     pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
     refund-api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
-    return-url: http://localhost:8089/payment/vnpay/return
+    return-url: http://localhost:8089/payment/vnpay-return
     order-type: other
     locale: vn
     expire-minutes: 15

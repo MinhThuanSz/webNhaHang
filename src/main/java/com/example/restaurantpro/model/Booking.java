@@ -44,6 +44,11 @@ public class Booking {
 
     private BigDecimal totalAmount = BigDecimal.ZERO;
 
+    @Column(length = 80)
+    private String appliedVoucherCode;
+
+    private BigDecimal discountAmount = BigDecimal.ZERO;
+
     @Column(length = 1200)
     private String notes;
 
@@ -103,6 +108,22 @@ public class Booking {
         return NumberFormat.getCurrencyInstance(VI_LOCALE).format(totalAmount);
     }
 
+    public BigDecimal getFinalAmount() {
+        BigDecimal base = totalAmount == null ? BigDecimal.ZERO : totalAmount;
+        BigDecimal discount = discountAmount == null ? BigDecimal.ZERO : discountAmount;
+        BigDecimal finalAmount = base.subtract(discount);
+        return finalAmount.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : finalAmount;
+    }
+
+    public String getDiscountAmountDisplay() {
+        BigDecimal discount = discountAmount == null ? BigDecimal.ZERO : discountAmount;
+        return NumberFormat.getCurrencyInstance(VI_LOCALE).format(discount);
+    }
+
+    public String getFinalAmountDisplay() {
+        return NumberFormat.getCurrencyInstance(VI_LOCALE).format(getFinalAmount());
+    }
+
     public Long getId() {
         return id;
     }
@@ -133,6 +154,14 @@ public class Booking {
 
     public String getNotes() {
         return notes;
+    }
+
+    public String getAppliedVoucherCode() {
+        return appliedVoucherCode;
+    }
+
+    public BigDecimal getDiscountAmount() {
+        return discountAmount;
     }
 
     public BookingStatus getStatus() {
@@ -197,6 +226,14 @@ public class Booking {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public void setAppliedVoucherCode(String appliedVoucherCode) {
+        this.appliedVoucherCode = appliedVoucherCode;
+    }
+
+    public void setDiscountAmount(BigDecimal discountAmount) {
+        this.discountAmount = discountAmount;
     }
 
     public void setStatus(BookingStatus status) {

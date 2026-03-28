@@ -13,4 +13,6 @@ public interface DiningTableRepository extends JpaRepository<DiningTable, Long> 
     List<DiningTable> findByActiveTrueAndCapacityGreaterThanEqualOrderByCapacityAsc(Integer guestCount);
 
     List<DiningTable> findByActiveTrueAndCapacityOrderByNameAsc(Integer capacity);
+
+    boolean existsByTableNumberIgnoreCase(String tableNumber);
 }

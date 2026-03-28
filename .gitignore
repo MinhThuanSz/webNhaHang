@@ -1,4 +1,5 @@
-target/
+src/main/resources/application.ymltarget/
+src/main/resources/application.ymltarget/
 .idea/
 *.iml
 .DS_Store

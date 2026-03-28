@@ -65,7 +65,7 @@ public class VnPayService {
         if (!booking.hasPayableAmount()) {
             throw new IllegalArgumentException("Booking khong co gia tri thanh toan qua VNPAY.");
         }
-        if (booking.getTotalAmount().compareTo(VNPAY_MINIMUM_AMOUNT) < 0) {
+        if (booking.getFinalAmount().compareTo(VNPAY_MINIMUM_AMOUNT) < 0) {
             throw new IllegalArgumentException("So tien toi thieu cua VNPAY la 5.000 VND.");
         }
         if (booking.getPaymentStatus() == PaymentStatus.PAID) {
@@ -75,10 +75,14 @@ public class VnPayService {
             throw new IllegalStateException("Booking dang o trang thai hoan tien, khong the tao giao dich moi.");
         }
 
-        String txnRef = generateTxnRef(booking.getId());
-        PaymentTransaction paymentTransaction = new PaymentTransaction(booking, txnRef, booking.getTotalAmount());
+        String txnRef = String.valueOf(booking.getId());
+        PaymentTransaction paymentTransaction = paymentTransactionRepository.findByTxnRef(txnRef)
+                .orElseGet(() -> new PaymentTransaction(booking, txnRef, booking.getFinalAmount()));
+        paymentTransaction.setBooking(booking);
+        paymentTransaction.setAmount(booking.getFinalAmount());
         paymentTransaction.setProvider("VNPAY");
         paymentTransaction.setType(PaymentTransactionType.PAYMENT);
+        paymentTransaction.setStatus(PaymentStatus.PENDING);
         paymentTransaction.setMessage("Khoi tao giao dich VNPAY");
         paymentTransactionRepository.save(paymentTransaction);
         bookingService.markPaymentPending(booking, txnRef);
@@ -88,7 +92,7 @@ public class VnPayService {
         params.put("vnp_Version", "2.1.0");
         params.put("vnp_Command", "pay");
         params.put("vnp_TmnCode", vnPayProperties.getTmnCode());
-        params.put("vnp_Amount", booking.getTotalAmount().multiply(BigDecimal.valueOf(100)).toBigInteger().toString());
+        params.put("vnp_Amount", booking.getFinalAmount().multiply(BigDecimal.valueOf(100)).toBigInteger().toString());
         params.put("vnp_CurrCode", "VND");
         params.put("vnp_TxnRef", txnRef);
         params.put("vnp_OrderInfo", sanitizeOrderInfo("Thanh toan booking " + booking.getId()));
@@ -383,12 +387,6 @@ public class VnPayService {
                 .replaceAll("\\s+", " ")
                 .trim();
         return normalized.length() > 255 ? normalized.substring(0, 255) : normalized;
-    }
-
-    private String generateTxnRef(Long bookingId) {
-        String timestamp = LocalDateTime.now(VN_ZONE).format(DateTimeFormatter.ofPattern("yyMMddHHmmss"));
-        int random = ThreadLocalRandom.current().nextInt(1000, 9999);
-        return "BK" + bookingId + timestamp + random;
     }
 
     private String generateRefundTxnRef(Long bookingId) {
