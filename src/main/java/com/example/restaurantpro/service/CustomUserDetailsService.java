@@ -31,6 +31,10 @@ public class CustomUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Tài khoản chưa có định danh đăng nhập hợp lệ.");
         }
 
+        if (user.isLocked()) {
+            throw new org.springframework.security.authentication.LockedException("Tài khoản của bạn đã bị khóa do vi phạm chính sách!");
+        }
+
         return User.withUsername(username)
                 .password(user.getPassword())
                 .disabled(!user.isEnabled())

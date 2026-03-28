@@ -26,7 +26,7 @@ import jakarta.servlet.http.HttpSession;
 public class OtpController {
 
     private static final String OTP_PENDING_EMAIL = "OTP_PENDING_EMAIL";
-    private static final String OTP_PENDING_NAME = "OTP_PENDING_NAME";
+    private static final String SET_PASSWORD_PENDING_EMAIL = "SET_PASSWORD_PENDING_EMAIL";
     private static final HttpSessionSecurityContextRepository SECURITY_CONTEXT_REPOSITORY =
             new HttpSessionSecurityContextRepository();
 
@@ -67,9 +67,19 @@ public class OtpController {
         }
 
         String normalizedEmail = pendingEmail.trim().toLowerCase();
-        String pendingName = getPendingName(session);
-        AppUser user = appUserService.findByEmail(normalizedEmail)
-            .orElseGet(() -> appUserService.registerOrUpdateGoogleUser(normalizedEmail, pendingName, null));
+        AppUser user = appUserService.findByEmail(normalizedEmail).orElse(null);
+
+        session.removeAttribute(OTP_PENDING_EMAIL);
+
+        if (user == null && session.getAttribute(SET_PASSWORD_PENDING_EMAIL) != null) {
+            redirectAttributes.addFlashAttribute("infoMessage", "Xác thực OTP thành công. Vui lòng bổ sung số điện thoại và mật khẩu.");
+            return "redirect:/set-password";
+        }
+
+        if (user == null) {
+            redirectAttributes.addFlashAttribute("errorMessage", "Không tìm thấy tài khoản Google. Vui lòng đăng nhập lại.");
+            return "redirect:/login";
+        }
 
         String loginId = user.getPhone() != null && !user.getPhone().isBlank() ? user.getPhone() : user.getEmail();
         if (loginId == null || loginId.isBlank()) {
@@ -86,8 +96,6 @@ public class OtpController {
         context.setAuthentication(authentication);
         SecurityContextHolder.setContext(context);
         SECURITY_CONTEXT_REPOSITORY.saveContext(context, request, response);
-        session.removeAttribute(OTP_PENDING_EMAIL);
-        session.removeAttribute(OTP_PENDING_NAME);
 
         redirectAttributes.addFlashAttribute("successMessage", "Xác thực OTP thành công.");
         return "redirect:/booking/start";
@@ -113,15 +121,6 @@ public class OtpController {
         }
         String email = value.toString();
         return email.isBlank() ? null : email;
-    }
-
-    private String getPendingName(HttpSession session) {
-        Object value = session.getAttribute(OTP_PENDING_NAME);
-        if (value == null) {
-            return "Google User";
-        }
-        String fullName = value.toString().trim();
-        return fullName.isBlank() ? "Google User" : fullName;
     }
 
     private String maskEmail(String email) {

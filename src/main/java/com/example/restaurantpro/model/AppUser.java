@@ -44,6 +44,12 @@ public class AppUser {
 
     private boolean enabled = true;
 
+    private boolean locked = false;
+
+    private boolean isVip = false;
+
+    private int loyaltyPoints = 0;
+
     private LocalDateTime createdAt = LocalDateTime.now();
 
     @ElementCollection(fetch = FetchType.EAGER)
@@ -104,6 +110,10 @@ public class AppUser {
         return enabled;
     }
 
+    public boolean isLocked() {
+        return locked;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -142,6 +152,26 @@ public class AppUser {
 
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
+    }
+
+    public void setLocked(boolean locked) {
+        this.locked = locked;
+    }
+
+    public boolean isVip() {
+        return isVip;
+    }
+
+    public void setVip(boolean vip) {
+        isVip = vip;
+    }
+
+    public int getLoyaltyPoints() {
+        return loyaltyPoints;
+    }
+
+    public void setLoyaltyPoints(int loyaltyPoints) {
+        this.loyaltyPoints = loyaltyPoints;
     }
 
     public void setCreatedAt(LocalDateTime createdAt) {

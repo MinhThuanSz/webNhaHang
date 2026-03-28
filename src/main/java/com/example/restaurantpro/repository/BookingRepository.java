@@ -10,12 +10,25 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.restaurantpro.dto.DailyRevenueDto;
-import com.example.restaurantpro.dto.KitchenOrderDto;
 import com.example.restaurantpro.model.Booking;
 import com.example.restaurantpro.model.BookingStatus;
 import com.example.restaurantpro.model.PaymentStatus;
 
+import java.util.Optional;
+
 public interface BookingRepository extends JpaRepository<Booking, Long> {
+
+    /**
+     * Load booking cùng danh sách món ăn trong một câu query duy nhất.
+     * Dùng cho EmailService để tránh LazyInitializationException trong thread @Async.
+     */
+    @Query("""
+        SELECT b FROM Booking b
+        LEFT JOIN FETCH b.items bi
+        LEFT JOIN FETCH bi.menuItem
+        WHERE b.id = :id
+    """)
+    Optional<Booking> findByIdWithItems(@Param("id") Long id);
 
     List<Booking> findByCustomer_PhoneOrderByBookingDateTimeDesc(String phone);
 
@@ -147,22 +160,28 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
                                                        @Param("paidStatus") PaymentStatus paidStatus);
 
     @Query("""
-      select new com.example.restaurantpro.dto.KitchenOrderDto(
-        coalesce(dt.tableNumber, dt.name),
-        dt.floor,
-        dt.roomType,
-        mi.name,
-        bi.quantity,
-        b.notes
-      )
-      from BookingItem bi
-      join bi.booking b
-      join b.diningTable dt
-      join bi.menuItem mi
-      where b.status <> com.example.restaurantpro.model.BookingStatus.CANCELLED
-        and b.status <> com.example.restaurantpro.model.BookingStatus.NO_SHOW
-        and b.paymentStatus <> com.example.restaurantpro.model.PaymentStatus.PAID
-      order by b.bookingDateTime asc, dt.floor asc, dt.tableNumber asc, mi.name asc
+      select distinct b
+      from Booking b
+      join fetch b.diningTable dt
+      join fetch b.items bi
+      join fetch bi.menuItem mi
+      where (b.status = :confirmedStatus or b.paymentStatus = :paidStatus)
+        and b.status not in :excludedStatuses
+        and b.endTime > :now
+      order by b.bookingDateTime asc, dt.floor asc, dt.tableNumber asc
     """)
-    List<KitchenOrderDto> findKitchenOrdersForActiveBookings();
+    List<Booking> findKitchenBookingsForActiveOrders(
+            @Param("now") LocalDateTime now,
+            @Param("confirmedStatus") BookingStatus confirmedStatus,
+            @Param("paidStatus") PaymentStatus paidStatus,
+            @Param("excludedStatuses") List<BookingStatus> excludedStatuses);
+
+    @Query("SELECT b FROM Booking b WHERE b.status IN :statuses AND b.bookingDateTime < :timeLimit")
+    List<Booking> findOverdueBookings(
+            @Param("statuses") List<BookingStatus> statuses,
+            @Param("timeLimit") LocalDateTime timeLimit
+    );
+
+    @Query("SELECT count(b) FROM Booking b WHERE b.customer.id = :userId AND b.status = :status")
+    long countCanceledBookingsByUserId(@Param("userId") Long userId, @Param("status") BookingStatus status);
 }

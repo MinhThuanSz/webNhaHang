@@ -21,9 +21,9 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
 
     public SecurityConfig(CustomUserDetailsService customUserDetailsService,
-                          GoogleOAuth2UserService googleOAuth2UserService,
-                          CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
-                          CustomAccessDeniedHandler customAccessDeniedHandler) {
+            GoogleOAuth2UserService googleOAuth2UserService,
+            CustomAuthenticationSuccessHandler customAuthenticationSuccessHandler,
+            CustomAccessDeniedHandler customAccessDeniedHandler) {
         this.customUserDetailsService = customUserDetailsService;
         this.googleOAuth2UserService = googleOAuth2UserService;
         this.customAuthenticationSuccessHandler = customAuthenticationSuccessHandler;
@@ -32,20 +32,25 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http,
-                                                   DaoAuthenticationProvider authenticationProvider) throws Exception {
+            DaoAuthenticationProvider authenticationProvider) throws Exception {
         http.authenticationProvider(authenticationProvider);
 
         http.authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/", "/login", "/register", "/403", "/otp/**", "/oauth2/**", "/login/oauth2/**", "/css/**", "/js/**", "/images/**", "/payment/vnpay/return", "/payment/vnpay/ipn").permitAll()
-                        .requestMatchers("/admin/users/**").hasRole("ADMIN")
-                        .requestMatchers("/admin/bookings/**").hasAnyRole("ADMIN", "TABLE_MANAGER")
-                        .requestMatchers("/admin/tables/**").hasAnyRole("ADMIN", "TABLE_MANAGER")
-                        .requestMatchers("/api/admin/tables/**").hasAnyRole("ADMIN", "TABLE_MANAGER")
-                        .requestMatchers("/admin/kitchen-orders/**").hasAnyRole("ADMIN", "MENU_MANAGER")
-                        .requestMatchers("/admin/menu/**").hasAnyRole("ADMIN", "MENU_MANAGER")
-                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "TABLE_MANAGER", "MENU_MANAGER")
-                        .requestMatchers("/booking/**", "/payment/**").hasAnyRole("CUSTOMER", "ADMIN")
-                        .anyRequest().authenticated())
+                .requestMatchers("/", "/menu", "/login", "/register", "/set-password", "/forgot-password/**", "/403",
+                        "/otp/**", "/oauth2/**", "/login/oauth2/**", "/css/**", "/js/**", "/images/**",
+                        "/payment/vnpay/return", "/payment/vnpay-return", "/payment/vnpay/ipn")
+                .permitAll()
+                .requestMatchers("/admin/users/**").hasRole("ADMIN")
+                .requestMatchers("/admin/bookings/**").hasAnyRole("ADMIN", "TABLE_MANAGER")
+                .requestMatchers("/admin/tables/**").hasAnyRole("ADMIN", "TABLE_MANAGER")
+                .requestMatchers("/api/admin/tables/**").hasAnyRole("ADMIN", "TABLE_MANAGER")
+                .requestMatchers("/admin/kitchen-orders/**").hasAnyRole("ADMIN", "MENU_MANAGER")
+                .requestMatchers("/admin/menu/**").hasAnyRole("ADMIN", "MENU_MANAGER")
+                .requestMatchers("/admin/**").hasAnyRole("ADMIN", "TABLE_MANAGER", "MENU_MANAGER")
+                .requestMatchers("/api/loyalty/**").hasAnyRole("CUSTOMER", "ADMIN")
+                .requestMatchers("/api/bookings/**").hasAnyRole("CUSTOMER", "ADMIN")
+                .requestMatchers("/booking/**", "/payment/**", "/profile/**").hasAnyRole("CUSTOMER", "ADMIN")
+                .anyRequest().authenticated())
                 .formLogin(form -> form
                         .loginPage("/login")
                         .loginProcessingUrl("/login")
@@ -53,15 +58,15 @@ public class SecurityConfig {
                         .failureUrl("/login?error=true")
                         .permitAll())
                 .oauth2Login(oauth2 -> oauth2
-                    .loginPage("/login")
-                    .userInfoEndpoint(userInfo -> userInfo.userService(googleOAuth2UserService))
-                    .successHandler(customAuthenticationSuccessHandler)
-                    .failureUrl("/login?error=true"))
+                        .loginPage("/login")
+                        .userInfoEndpoint(userInfo -> userInfo.userService(googleOAuth2UserService))
+                        .successHandler(customAuthenticationSuccessHandler)
+                        .failureUrl("/login?error=true"))
                 .logout(logout -> logout
                         .logoutSuccessUrl("/?logout=true")
-                    .permitAll())
+                        .permitAll())
                 .exceptionHandling(exception -> exception
-                    .accessDeniedHandler(customAccessDeniedHandler));
+                        .accessDeniedHandler(customAccessDeniedHandler));
 
         return http.build();
     }
@@ -71,6 +76,7 @@ public class SecurityConfig {
         DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
         provider.setUserDetailsService(customUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
+        provider.setHideUserNotFoundExceptions(false);
         return provider;
     }
 }

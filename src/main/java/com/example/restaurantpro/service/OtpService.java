@@ -14,6 +14,7 @@ import com.example.restaurantpro.repository.OtpCodeRepository;
 public class OtpService {
 
     private final EmailService emailService;
+    private final AppUserService appUserService;
     private final OtpCodeRepository otpCodeRepository;
     private final PasswordEncoder passwordEncoder;
 
@@ -21,9 +22,11 @@ public class OtpService {
     private long expiryMinutes;
 
     public OtpService(EmailService emailService,
+                      AppUserService appUserService,
                       OtpCodeRepository otpCodeRepository,
                       PasswordEncoder passwordEncoder) {
         this.emailService = emailService;
+        this.appUserService = appUserService;
         this.otpCodeRepository = otpCodeRepository;
         this.passwordEncoder = passwordEncoder;
     }
@@ -41,7 +44,10 @@ public class OtpService {
         code.setUsed(false);
         otpCodeRepository.save(code);
 
-        emailService.sendOtpEmail(email, otp, expiryMinutes);
+        String recipientName = appUserService.findByEmail(email)
+            .map(user -> user.getFullName())
+            .orElse("Quý khách");
+        emailService.sendOtpEmail(email, recipientName, otp, expiryMinutes);
     }
 
     @Transactional

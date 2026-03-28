@@ -12,7 +12,7 @@ public class VnPayProperties {
     private String hashSecret;
     private String payUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
     private String refundApiUrl = "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
-    private String returnUrl = "http://localhost:8089/payment/vnpay/return";
+    private String returnUrl = "http://localhost:8089/payment/vnpay-return";
     private String orderType = "other";
     private String locale = "vn";
     private int expireMinutes = 15;

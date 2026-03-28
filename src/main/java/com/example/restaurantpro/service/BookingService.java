@@ -11,7 +11,6 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 
 import com.example.restaurantpro.dto.DailyRevenueDto;
-import com.example.restaurantpro.dto.KitchenOrderDto;
 import com.example.restaurantpro.model.AppUser;
 import com.example.restaurantpro.model.Booking;
 import com.example.restaurantpro.model.BookingItem;
@@ -33,15 +32,18 @@ public class BookingService {
     private final AppUserService appUserService;
     private final TableService tableService;
     private final MenuService menuService;
+    private final LoyaltyService loyaltyService;
 
     public BookingService(BookingRepository bookingRepository,
                           AppUserService appUserService,
                           TableService tableService,
-                          MenuService menuService) {
+                          MenuService menuService,
+                          LoyaltyService loyaltyService) {
         this.bookingRepository = bookingRepository;
         this.appUserService = appUserService;
         this.tableService = tableService;
         this.menuService = menuService;
+        this.loyaltyService = loyaltyService;
     }
 
     public BigDecimal getRevenueByDate(LocalDate date) {
@@ -64,8 +66,14 @@ public class BookingService {
         return bookingRepository.getRevenueStatsByDaysInMonth(month, year, PaymentStatus.PAID);
     }
 
-    public List<KitchenOrderDto> getKitchenOrdersForActiveBookings() {
-        return bookingRepository.findKitchenOrdersForActiveBookings();
+    public List<Booking> getKitchenOrdersForActiveBookings() {
+        LocalDateTime now = LocalDateTime.now();
+        return bookingRepository.findKitchenBookingsForActiveOrders(
+                now,
+                BookingStatus.CONFIRMED,
+                PaymentStatus.PAID,
+                List.of(BookingStatus.CANCELLED, BookingStatus.NO_SHOW)
+        );
     }
 
     public Booking createBooking(String customerLoginId,
@@ -85,6 +93,12 @@ public class BookingService {
 
         AppUser customer = appUserService.findByLoginId(customerLoginId)
                 .orElseThrow(() -> new IllegalArgumentException("Khong tim thay khach hang."));
+
+        int hour = bookingDateTime.getHour();
+        if (hour >= 17 && hour <= 20 && !customer.isVip()) {
+            throw new IllegalArgumentException("Khung giờ vàng (17h-20h) chỉ dành riêng cho khách hàng VIP!");
+        }
+
         DiningTable table = tableService.getTableById(tableId);
         if (table.getCapacity() == null || !table.getCapacity().equals(guestCount)) {
             throw new IllegalArgumentException("Ban da chon ban khong dung suc chua voi so khach.");
@@ -209,6 +223,8 @@ public class BookingService {
         booking.setLatestPaymentTxnRef(txnRef);
         booking.setPaidAt(paidAt == null ? LocalDateTime.now() : paidAt);
         bookingRepository.save(booking);
+
+        loyaltyService.addPointsForBooking(booking);
     }
 
     public void markPaymentFailed(Booking booking, String txnRef) {
@@ -260,6 +276,8 @@ public class BookingService {
         booking.addPaymentTransaction(manualTransaction);
 
         bookingRepository.save(booking);
+
+        loyaltyService.addPointsForBooking(booking);
     }
 
     public long countBookings() {

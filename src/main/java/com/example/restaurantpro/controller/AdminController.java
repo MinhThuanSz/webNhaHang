@@ -268,7 +268,7 @@ public String menu(@RequestParam(required = false) Long editId, Model model) {
 
     @GetMapping("/kitchen-orders")
     public String kitchenOrders(Model model) {
-        model.addAttribute("kitchenOrders", bookingService.getKitchenOrdersForActiveBookings());
+        model.addAttribute("bookings", bookingService.getKitchenOrdersForActiveBookings());
         return "admin/kitchen-orders";
     }
 

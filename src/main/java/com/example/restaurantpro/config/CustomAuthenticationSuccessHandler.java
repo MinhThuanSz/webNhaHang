@@ -11,6 +11,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Component;
 
+import com.example.restaurantpro.model.AppUser;
+import com.example.restaurantpro.service.AppUserService;
 import com.example.restaurantpro.service.OtpService;
 
 import jakarta.servlet.ServletException;
@@ -25,11 +27,16 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
 
     private static final String OTP_PENDING_EMAIL = "OTP_PENDING_EMAIL";
     private static final String OTP_PENDING_NAME = "OTP_PENDING_NAME";
+    private static final String SET_PASSWORD_PENDING_EMAIL = "SET_PASSWORD_PENDING_EMAIL";
+    private static final String SET_PASSWORD_PENDING_NAME = "SET_PASSWORD_PENDING_NAME";
+    private static final String SET_PASSWORD_PENDING_GOOGLE_ID = "SET_PASSWORD_PENDING_GOOGLE_ID";
     private static final String GOOGLE_OTP_ERROR_DETAIL = "GOOGLE_OTP_ERROR_DETAIL";
 
+    private final AppUserService appUserService;
     private final OtpService otpService;
 
-    public CustomAuthenticationSuccessHandler(OtpService otpService) {
+    public CustomAuthenticationSuccessHandler(AppUserService appUserService, OtpService otpService) {
+        this.appUserService = appUserService;
         this.otpService = otpService;
     }
 
@@ -40,24 +47,33 @@ public class CustomAuthenticationSuccessHandler implements AuthenticationSuccess
         if (authentication.getPrincipal() instanceof OAuth2User oauth2User) {
             String email = oauth2User.getAttribute("email");
             String fullName = oauth2User.getAttribute("name");
+            String googleId = oauth2User.getAttribute("sub");
             if (email != null && !email.isBlank()) {
+                String normalizedEmail = email.trim().toLowerCase();
+                HttpSession session = request.getSession(true);
+                AppUser existingUser = appUserService.findByEmail(normalizedEmail).orElse(null);
+                if (existingUser == null) {
+                    session.setAttribute(SET_PASSWORD_PENDING_EMAIL, normalizedEmail);
+                    session.setAttribute(SET_PASSWORD_PENDING_NAME, fullName);
+                    session.setAttribute(SET_PASSWORD_PENDING_GOOGLE_ID, googleId);
+                } else {
+                    appUserService.registerOrUpdateGoogleUser(normalizedEmail, fullName, googleId);
+                }
+
                 try {
-                    otpService.generateAndSendOtp(email);
-                    HttpSession session = request.getSession(true);
-                    session.setAttribute(OTP_PENDING_EMAIL, email);
+                    otpService.generateAndSendOtp(normalizedEmail);
+                    session.setAttribute(OTP_PENDING_EMAIL, normalizedEmail);
                     session.setAttribute(OTP_PENDING_NAME, fullName);
 
                     logoutKeepSession(request, response, authentication);
                     response.sendRedirect("/otp/verify");
                 } catch (MailException ex) {
                     log.error("Google login succeeded but OTP email sending failed for {}", email, ex);
-                    HttpSession session = request.getSession(true);
                     session.setAttribute(GOOGLE_OTP_ERROR_DETAIL, rootCauseMessage(ex));
                     logoutKeepSession(request, response, authentication);
                     response.sendRedirect("/login?googleOtpError=true");
                 } catch (RuntimeException ex) {
                     log.error("Google login flow failed unexpectedly for {}", email, ex);
-                    HttpSession session = request.getSession(true);
                     session.setAttribute(GOOGLE_OTP_ERROR_DETAIL, rootCauseMessage(ex));
                     logoutKeepSession(request, response, authentication);
                     response.sendRedirect("/login?googleOtpError=true");
