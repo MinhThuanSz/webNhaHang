@@ -18,8 +18,8 @@ spring:
       client:
         registration:
           google:
-            client-id: ${GOOGLE_CLIENT_ID:532455676051-e1q2dig1o7ngent6mtita020fqkgphpf.apps.googleusercontent.com}
-            client-secret: ${GOOGLE_CLIENT_SECRET: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}
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
             scope:
               - openid
               - profile
@@ -27,8 +27,8 @@ spring:
   mail:
     host: ${SMTP_HOST:smtp.gmail.com}
     port: ${SMTP_PORT:587}
-    username: ${MAIL_USERNAME:lollong2112@gmail.com}
-    password: ${MAIL_APP_PASSWORD:hcnhsnpovamvwlfq}
+    username: ${MAIL_USERNAME:}
+    password: ${MAIL_APP_PASSWORD:}
     properties:
       mail:
         smtp:
@@ -55,8 +55,8 @@ server:
 payment:
   vnpay:
     enabled: true
-    tmn-code: 2R8G8U8Y
-    hash-secret: IJV801DQ1Q1154RZLF0N9G8DLC8K5YWZ
+    tmn-code: 
+    hash-secret: 
     pay-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
     refund-api-url: https://sandbox.vnpayment.vn/merchant_webapi/api/transaction
     return-url: http://localhost:8089/payment/vnpay-return
